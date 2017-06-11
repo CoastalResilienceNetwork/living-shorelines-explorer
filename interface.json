@@ -1,0 +1,247 @@
+{
+	"includeMinimize": true,
+	"infoGraphic": {
+		"show": true,
+		"popup": true,
+		"width":600,
+		"height":400, 
+		"url":""
+	},
+	"tooltips": {
+		"region": "Geographic areas where living shoreline recommendations have been completed."
+	},
+	"controls": {
+		"habitat": {
+			"marsh": { "label":"Marsh <br>(alone or with oyster)", "value": 4 },
+			"marsh_fortified": { "label":"Marsh <br>(fortified with rock sill)", "value": 2 },
+			"not_recommended": { "label":"Living Shoreline <br>(not recommended)", "value": 0 }
+		},
+		"factors": {
+			"10": { "label": { "rep_we":"<= 300 J/m", "bwe":">200 m Rec & <br>>500 m Comm", "dist":"<= 100 m"} },
+			"5": { "label": { "rep_we":"300-700 J/m", "bwe":"100-200 m Rec & <br>200-500 m Comm"} },
+			"0": { "label": { "rep_we":"> 700 J/m", "bwe":"<100 m Rec & <br><200 m Comm", "dist":"> 100 m"} }
+		},
+		"radio": {
+			"rep_we": { "type": "radio", "group":"factors", "name":"rep_we", "value":"rep_we", "label":"Representative Wave Energy (RWE)", "checked": true },
+			"bwe": { "type": "radio", "group":"factors", "name":"bwe", "value":"bwe", "label":"Boat Wake Energy: Distance (m) from Channels", "checked": false },
+			"dist": { "type": "radio", "group":"factors", "name":"dist", "value":"dist", "label":"Distance (m) to Natural Marsh Shoreline", "checked": false }
+		},
+		"check": {
+			"projects": { "type": "check", "name":"projects", "value":"projects", "label":"Existing Projects", "checked": false },
+			"marsh": { "type": "check", "name":"marsh", "value":"marsh", "label":"Natural Marsh", "checked": false },
+			"recreational": { "type": "check", "name":"recreational", "value":"recreational", "label":"Recreational Channel", "checked": false },
+			"commercial": { "type": "check", "name":"commercial", "value":"commercial", "label":"Commercial Channel", "checked": false },
+			"rel_we": { "type": "check", "name":"rel_we", "value":"rel_we", "label":"Relative Wave Energy", "checked": false }
+		}
+	},
+	"chart": {
+		"domain": [0,10],
+		"tickValues": [5,10],
+		"fields": {
+			"factors": {
+				"rep_we": "RWE_score",
+				"bwe": "boat_score",
+				"dist": "Marsh_score"
+			},
+			"final": "Final_Scor"
+		},
+		"labels": {
+			"factors": {
+				"rep_we": "Rep. Wave Energy (RWE)",
+				"bwe": "Boat Wake Energy (BWE)",
+				"dist": "Distance to Marsh (DTM)"
+			},
+			"scores": {
+				"10": { "rep_we":"<= 300", "bwe":">200 Rec >500 Com", "dist":"<= 100" },
+				"5": {  "rep_we":"300-700", "bwe":"100-200 Rec 200-500 Com" },
+				"0": { "rep_we":"> 700", "bwe":"<100 Rec <200 Com", "dist":"> 100" }
+			},
+			"habitat": {
+				"marsh": "Marsh (alone or with oyster)", 
+				"marsh_fortified": "Marsh (fortified with rock sill)", 
+				"not_recommended": "Living Shoreline (not recommended)"
+			}
+		},
+		"colors": { 
+			"scores": {
+				"0":"#74a9cf", 
+				"5":"#0570b0", 
+				"10":"#023858"
+			},
+			"habitat": {
+				"marsh":"#43B39D", 
+				"marsh_fortified":"#FECB60", 
+				"not_recommended":"#FF6436"
+			}
+		},
+		"data": [
+			{ "axis": "RWE", "value": 0, "class": "rep_we" },
+			{ "axis": "BWE", "value": 5, "class": "bwe" }, 
+			{ "axis": "DTM", "value": 10, "class": "dist" }
+		],
+		"position": {
+			"width": 280,
+			"height": 75,
+			"margin": {
+				"top": 0,
+				"right":10,
+				"bottom":15,
+				"left":40
+			}
+		}
+	},
+	"region": {
+		"Carteret": {
+			"layers": {
+				"main": { "type": "dynamic", "url":"http://dev.services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer", "visibleIds": [12] },
+				"feature": { "type": "feature", "url":"http://dev.services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/11" }
+			},
+			"query": { 
+				"habitat": {
+					"url": "http://dev.services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/12",
+					"outFields": ["INDEX","TOTAL_MILES"],
+					"keyField":"INDEX",
+					"valueField":"TOTAL_MILES",
+					"key": { "0":"not_recommended", "2":"marsh_fortified", "4":"marsh" }
+				}, 
+				"factors": {
+					"rep_we": { 
+						"url": "http://dev.services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/10",
+						"outFields": ["RWE_SCORE","Shape_Area"],
+						"keyField":"RWE_SCORE",
+						"valueField":"Shape_Area"
+					},
+					"bwe": {
+						"url": "http://dev.services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/9",
+						"outFields": ["BOAT_SCORE","Shape_Area"],
+						"keyField":"BOAT_SCORE",
+						"valueField":"Shape_Area"
+					},
+					"dist": {
+						"url": "http://dev.services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/8",
+						"outFields": ["MARSH_SCORE","Shape_Area"],
+						"keyField":"MARSH_SCORE",
+						"valueField":"Shape_Area"
+					}
+				}
+			},
+			"definitionExpression": {
+				"habitat": {
+					"dynamicId": 12,
+					"field": "INDEX"
+				},
+				"factor": {
+					"rep_we": { 
+						"dynamicId": 10,
+						"field": "RWE_SCORE"
+					},
+					"bwe": { 
+						"dynamicId": 9,
+						"field": "BOAT_SCORE"
+					},
+					"dist": { 
+						"dynamicId": 8,
+						"field": "MARSH_SCORE"
+					}
+				}
+			},
+			"tooltips": {
+				"region": "Geographic areas where climate change/sea level rise vulnerability studies have been conducted."
+			},
+			"extent": {
+				"xmin":-8599528.77855,
+				"ymin":4104880.45566,
+				"xmax":-8415688.77855,
+				"ymax":4151765.87399,
+				"spatialReference": {
+					"wkid": 102100,
+					"latestWkid": 3857
+				}
+			},
+			"controls": {
+				"habitat": {},
+				"radio": {},
+				"check": {}
+			},
+			"download": {
+				"report":"https://coast.noaa.gov/floodexposure/#/services#flood-hazards"
+			}
+		},
+		"Onslow": {
+			"layers": {
+				"main": { "type": "dynamic", "url":"http://dev.services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer", "visibleIds": [19] },
+				"feature": { "type": "feature", "url":"http://dev.services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/18" }
+			},
+			"query": { 
+				"habitat": {
+					"url": "http://dev.services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/19",
+					"outFields": ["INDEX","TOTAL_MILES"],
+					"keyField":"INDEX",
+					"valueField":"TOTAL_MILES",
+					"key": { "0":"not_recommended", "2":"marsh_fortified", "4":"marsh" }
+				}, 
+				"factors": {
+					"rep_we": { 
+						"url": "http://dev.services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/17",
+						"outFields": ["RWE_SCORE","Shape_Area"],
+						"keyField":"RWE_SCORE",
+						"valueField":"Shape_Area"
+					},
+					"bwe": {
+						"url": "http://dev.services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/16",
+						"outFields": ["BOAT_SCORE","Shape_Area"],
+						"keyField":"BOAT_SCORE",
+						"valueField":"Shape_Area"
+					},
+					"dist": {
+						"url": "http://dev.services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/15",
+						"outFields": ["MARSH_SCORE","Shape_Area"],
+						"keyField":"MARSH_SCORE",
+						"valueField":"Shape_Area"
+					}
+				}
+			},
+			"definitionExpression": {
+				"habitat": {
+					"dynamicId": 19,
+					"field": "INDEX"
+				},
+				"factor": {
+					"rep_we": { 
+						"dynamicId": 17,
+						"field": "RWE_SCORE"
+					},
+					"bwe": { 
+						"dynamicId": 16,
+						"field": "BOAT_SCORE"
+					},
+					"dist": { 
+						"dynamicId": 15,
+						"field": "MARSH_SCORE"
+					}
+				}
+			},
+			"tooltips": {
+				"region": "Geographic areas where climate change/sea level rise vulnerability studies have been conducted."
+			},
+			"extent": {
+				"xmin":-8636070.59516,
+				"ymin":4115178.3144,
+				"xmax":-8571296.96194,
+				"ymax":4137371.6708,
+				"spatialReference": {
+					"wkid": 102100,
+					"latestWkid": 3857
+				}
+			},
+			"controls": {
+				"habitat": {},
+				"radio": {},
+				"check": {}
+			},
+			"download": {
+				"report":"https://coast.noaa.gov/floodexposure/#/services#flood-hazards"
+			}
+		}
+	}
+}

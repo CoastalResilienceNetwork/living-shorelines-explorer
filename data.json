@@ -1,0 +1,27 @@
+{
+	"region": {
+		"Carteret": {
+			"rep_we": [10],
+			"bwe": [9],
+			"dist": [8],
+			
+			"projects":[1],
+			"marsh":[2],
+			"recreational":[3],
+			"commercial":[4],
+			"rel_we":[5]
+		
+		},
+		"Onslow": {
+			"rep_we": [17],
+			"bwe": [16],
+			"dist": [15],
+			
+			"projects":[1],
+			"marsh":[2],
+			"recreational":[3],
+			"commercial":[4],
+			"rel_we":[5]
+		}
+	}
+}
