@@ -1043,24 +1043,13 @@ define([
 			}
 
 			this.showMessageDialog = function(node, message, position) {
-				_.first(query(".inner", self.tip)).innerHTML = message;
-				/*
-				var p = domGeom.position(win.body());
-				var np = domGeom.position(node);
-				var nm = domGeom.getMarginBox(node);
-				var t = domGeom.getMarginBox(self.tip);
-				
-				var n = { "x": np.x, "y": np.y, "w": np.w, "h": (np.h == nm.h) ? np.h - 4 : np.h }
-				
-				var top = n.y - p.y - t.h/2 + n.h/2;
-				
-				top = (position && position.t) ? n.y - p.y + t.h/2 + position.t : top;
-				
+				_.first(query(".inner", this.tip)).innerHTML = message;
+				var top = domGeom.getMarginBox(this.layersPane.domNode).t;
+				var height = domGeom.position(this.layersPane.domNode).h;
 				domStyle.set(self.tip, {
-					"top": top + "px"
+					"top": top + "px",
+					"height": height + "px"
 				});
-				*/
-				
 				var node = _.first(query(".plugin-ls .help"));
 				var params = {
 					node: node,
