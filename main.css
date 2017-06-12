@@ -30,7 +30,7 @@ cursor:pointer;
 }
 
 /* base CSS element */
-.slr-tooltip {
+.ls-tooltip {
 position:absolute;
 display:none;
 z-index: 1000000;
@@ -49,13 +49,13 @@ text-align:center;
 line-height: 15px;
 }
 
-.slr-tooltip span {
+.ls-tooltip span {
 display:inline-block;
 vertical-align:middle;
 text-align:center;
 }
 
-.slr-tooltip:after, .slr-tooltip:before {
+.ls-tooltip:after, .slr-tooltip:before {
 top: 50%;
 right: 100%;
 border: solid transparent;
@@ -66,13 +66,13 @@ position: absolute;
 pointer-events: none;
 }
 
-.slr-tooltip:after {
+.ls-tooltip:after {
 border-color: rgba(68, 68, 68, 0);
 border-right-color: #ccd5d5;
 border-width: 5px;
 margin-top: -5px;
 }
-.slr-tooltip:before {
+.ls-tooltip:before {
 border-color: rgba(204, 204, 204, 0);
 border-right-color: #ccd5d5;
 border-width: 6px;
@@ -524,7 +524,7 @@ height: 20px;
 bottom: 10px;
 right: 95px;
 display:none;
-background: #fff;
+background: none;
 }
 
 .utility .dijitSliderDisabled div.dijitSliderProgressBarH, .utility .dijitSliderDisabled div.dijitSliderLeftBumper, .utility .dijitSliderDisabled div.dijitSliderRightBumper  {

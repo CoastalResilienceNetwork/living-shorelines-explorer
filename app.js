@@ -136,13 +136,13 @@ define([
 					domStyle.set(this.infoGraphicButton, "display", display);
 				}
 				
-				on(this.infoGraphicButton, "mouseover", function(){
+				/* on(this.infoGraphicButton, "mouseover", function(){
 					self.showMessageDialog(this, "Learn more");
 				})
 				
 				on(this.infoGraphicButton, "mouseout", function(){
 					self.hideMessageDialog();
-				})
+				}) */
 				
 				var plugin = this;
 				on(this.infoGraphicButton, "click", function(c){
