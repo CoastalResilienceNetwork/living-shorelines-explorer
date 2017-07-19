@@ -385,7 +385,7 @@ display: inline-block;
 left: 13px;
 line-height: 60px;
 font-size: 18px;
-margin-right: 10px;
+margin-right: 5px;
 margin-left:10px;
 }
 
@@ -398,19 +398,35 @@ border-radius: 17px;
 background-size: 30px 30px; */
 }
 
-.plugin-ls .stat-value {
+.plugin-ls .stat-pct {
 display: inline-block;
-width:50px;
+width:35px;
 font-size: 18px;
 letter-spacing: -0.5px;
 font-weight: bold;
-margin-right:5px;
+margin-right:2px;
 text-align:right;
+}
+
+.plugin-ls .stat-dist {
+display: inline-block;
+width:70px;
+font-size: 15px;
+letter-spacing: -0.5px;
+font-weight: bold;
+margin-right:5px;
+text-align:left;
+}
+
+.plugin-ls .stat-value {
+font-size: 15px;
+letter-spacing: -0.5px;
+font-weight: bold;
 }
 
 .plugin-ls .stat-units {
 display: inline-block;
-width:50px;
+width:18px;
 font-size: 18px;
 letter-spacing: -0.5px;
 font-weight: bold;
@@ -426,7 +442,8 @@ vertical-align: middle;
 }
 
 .plugin-ls .factors .stat-label {
-width: 180px;
+width: 160px;
+font-size: 15px;
 }
 
 .plugin-ls .factors .stat-score {
@@ -462,47 +479,21 @@ background:#FECB60;
 background:#FF6436;	
 }
 
-.plugin-ls .stat-pill.marsh.inactive  {
-background:#C8E4DF;	
-}
-
-.plugin-ls .stat-pill.marsh_fortified.inactive  {
-background:#F7EAD0;	
-}
-
-.plugin-ls .stat-pill.not_recommended.inactive {
-background:#F7D1C5;	
-}
-
-
 .plugin-ls .stat-pill.factor-0  {
-background:#D64051;	
-background:#74a9cf;
+background:#a5ade5;
+background: #b9bee6;
 }
 
 .plugin-ls .stat-pill.factor-5  {
-background:#66C2A5;
-background:#0570b0;
+background:#BA83CD;
 }
 
 .plugin-ls .stat-pill.factor-10 {
-background:#3087BD;
-background:#023858;
+background:#5f025b;
 }
 
-.plugin-ls .stat-pill.factor-0.inactive  {
-background:#D64051;	
-background:#D5E2EB;
-}
-
-.plugin-ls .stat-pill.factor-5.inactive   {
-background:#66C2A5;
-background:#B9D4E4;
-}
-
-.plugin-ls .stat-pill.factor-10.inactive  {
-background:#3087BD;
-background:#B8C6CE;
+.plugin-ls .stat-pill.inactive  {
+opacity:0.2;
 }
 
 .plugin-ls .stat-over {
@@ -599,7 +590,7 @@ margin: 0 2px 2px;
 width: 12px;
 top: -1px;
 position: relative;
-font-size: 14px;
+font-size: 10px;
 }
 
 /* DOJOX TITLE GROUP */
@@ -612,7 +603,7 @@ border-bottom: none;
 background: none;
 background-color:transparent;
 background-image:none;
-font-size: 17px;
+font-size: 16px;
 font-weight:bold;
 border: none;
 border-bottom: none;
@@ -676,7 +667,7 @@ display:none;
 .plugin-ls .details {
 position:absolute;
 width:95%;
-height:auto;
+height:95%;
 top:0;
 left:2.5%;
 background:#F5F5F5;
@@ -704,11 +695,12 @@ color:#ffffff;
 }
 
 .plugin-ls .details .inner {
-padding:10px 15px;
+padding:10px;
 }
 
 .plugin-ls .chart  {
 padding:5px 0px 10px 25px;
+padding:0px;
 }
 
 .plugin-ls .chart text.bar-labels {
@@ -722,22 +714,46 @@ display:none;
 
 .plugin-ls .details .content table {
 width:100%;
+border-collapse: collapse;
+}
+
+.plugin-ls .details .content table tr.table-header {
+text-align:center;
+color: #000;
+font-weight:bold;
+}
+
+.plugin-ls .details .content table td {
+padding: 5px 0px;
+border-bottom:1px solid #ccc;
+}
+
+.plugin-ls .details .content table td.table-header-cell {
+font-size:14px;
+padding: 8px 0px;
 }
 
 .plugin-ls .details .content table td.label {
-width:45%;
+width:41%;
+text-align:center;
 }
 .plugin-ls .details .content table td.value {
-width:50%;	
+width:43%;
+text-align:center;
 }
 .plugin-ls .details .content table td.score {
-width:5%;
+width:15%;
 text-align:center;
 }
 
 .plugin-ls .details .content table tr.final-rec {
 font-size:16px;
 font-weight:bold;
+border-bottom:none;
+}
+
+.plugin-ls .details .content table tr.final-rec td {
+border-bottom:none;
 }
 
 .plugin-ls .details .content table td.category {
@@ -791,4 +807,28 @@ color:#ffffff;
 padding:20px;
 line-height:1;
 font-size:14px;
+}
+
+.plugin-ls .main-stat {
+font-weight:bold;
+font-size: 17px;
+text-align:center;
+margin-bottom:10px;	
+}
+
+.infoGraphic-content {
+padding:30px;
+font-size: 15px;
+line-height: 17px;
+}
+
+.infoGraphic-subContent {
+font-size: 12px;
+line-height: 14px;	
+}
+
+.infoGraphic-content img{
+margin-top: 10px;
+margin-bottom: 10px;
+border-radius: 10px;
 }

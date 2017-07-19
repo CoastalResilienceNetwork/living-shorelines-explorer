@@ -107,7 +107,7 @@ define([
 			this._defaultTitles = {
 				
 			}
-			this.totals = {}
+			this.featureLayerScale = 36112;
 
 			this.initialize = function(){
 				//console.log("initialize - container");
@@ -149,13 +149,13 @@ define([
 					var popup = JSON.parse(domAttr.get(this, "data-popup"));
 					var url = domAttr.get(this, "data-url");
 					if (popup) {
-						var html = url.replace("PLUGIN-DIRECTORY", plugin._plugin_directory);
+						var html = self._interface.infoGraphic.html.replace("PLUGIN-DIRECTORY", plugin._plugin_directory);;
 						TINY.box.show({
 							animate: true,
 							html: html,
 							fixed: true,
-							width: 640,
-							height: 450
+							width: 860,
+							height: 690
 						});
 					} else {
 						window.open(url, "_blank");
@@ -199,9 +199,9 @@ define([
 			
 			this.loadLayerStats = function() {
 				array.forEach(_.keys(this._interface.region), function(key) {
-					self.totals[key] = {};
-					self.totals[key].habitat = {};
-					self.totals[key].factors = {};
+					self._interface.region[key].stats.dist = {};
+					self._interface.region[key].stats.dist.habitat = {};
+					self._interface.region[key].stats.dist.factors = {};
 					
 					var q = new Query();
 					q.where = "1=1";
@@ -215,13 +215,13 @@ define([
 						var valueField = self._interface.region[key].query.habitat.valueField;
 						
 						array.forEach(results.features, function(row) {
-							self.totals[key].habitat[habitat[row.attributes[keyField]]] = row.attributes[valueField];
+							self._interface.region[key].stats.dist.habitat[habitat[row.attributes[keyField]]] = row.attributes[valueField];
 						});
-						self.totals[key].habitat.total = _.reduce(_.values(self.totals[key].habitat), function(memo, num) { return memo + num }, 0)
+						self._interface.region[key].stats.dist.habitat.total = _.reduce(_.values(self._interface.region[key].stats.dist.habitat), function(memo, num) { return memo + num }, 0)
 						
 						
 						array.forEach(_.keys(self._interface.region[key].query.factors), function(factor) {
-							self.totals[key].factors[factor] = {}
+							self._interface.region[key].stats.dist.factors[factor] = {}
 							
 							var q = new Query();
 							q.where = "1=1";
@@ -235,7 +235,7 @@ define([
 								
 								var total = _.reduce(_.map(results.features, function(row) { return row.attributes[valueField]; }) , function(memo, num) { return memo + num }, 0)
 								array.forEach(results.features, function(row) {
-									self.totals[key].factors[factor][row.attributes[keyField]] = row.attributes[valueField] / total * self.totals[key].habitat.total;
+									self._interface.region[key].stats.dist.factors[factor][row.attributes[keyField]] = row.attributes[valueField] / total * self._interface.region[key].stats.dist.habitat.total;
 								});
 							});
 						});
@@ -244,6 +244,10 @@ define([
 			}
 
 			this.loadLayers = function() {
+				on(this._map, "zoom-end", function(evt) {
+					self.updateMapLayers();
+				})
+				
 				var i = 0
 				array.forEach(_.keys(self._interface.region), function(region){
 					self._mapLayers[region] = {}
@@ -255,6 +259,12 @@ define([
 							mapLayer.setImageFormat("png32");
 						} else {
 							var mapLayer = new FeatureLayer(self._interface.region[region].layers[layer].url, { id:id, outFields:["*"] });
+							var symbol = new esri.symbol.SimpleFillSymbol(esri.symbol.SimpleFillSymbol.STYLE_SOLID, new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new dojo.Color([0,0,0,0]),1), new dojo.Color([255,255,255,0.05]));
+							mapLayer.setRenderer(new esri.renderer.SimpleRenderer(symbol));
+							
+							on(mapLayer, "update-end", function(evt) {
+								query("#" + id + "_layer path").style("cursor", "pointer");
+							});
 							
 							on(mapLayer, "click", function(evt){
 								self._map.graphics.clear()
@@ -396,7 +406,7 @@ define([
 				var colors = this._interface.chart.colors;
 				var labels = this._interface.chart.labels;
 				
-				this.chart.plot.selectAll('rect')
+				/* this.chart.plot.selectAll('rect')
 					.data(data.data)
 					.transition()
 					.duration(500)
@@ -409,7 +419,7 @@ define([
 					.duration(500)
 						.text(function(d) { return d.value })
 							.attr("x", function(d) { return (d.value == 0) ? 12 : self.chart.x(d.value) - 5 })
-							.attr("y", function(d, i) { return  (i * 25) + 16 });
+							.attr("y", function(d, i) { return  (i * 25) + 16 }); */
 						
 				_.first(query(".plugin-ls .details .content td.category")).innerHTML = labels.habitat[data.habitat];
 				_.first(query(".plugin-ls .details .content td.final-score")).innerHTML = data.final;
@@ -424,7 +434,8 @@ define([
 			}
 			
 			this.updateMapLayers = function() {
-				var visibleIds = (this.recommendationPane.open) ? this._interface.region[this._region].layers.main.visibleIds : [];
+				var scale = (this._map.getScale() > this.featureLayerScale) ? "small" : "large";
+				var visibleIds = (this.recommendationPane.open) ? this._interface.region[this._region].layers.main.scaleRangeIds[scale] : self._data.region[self._region]["county"];
 				
 				array.forEach(_.keys(this._interface.controls.radio), function(rb) {
 					if (self[rb + "RadioButton"].checked && !self.recommendationPane.open) {
@@ -492,7 +503,7 @@ define([
 			}
 			
 			this.updateExtentByRegion = function(region) {
-				this._map.setExtent(new Extent(this._interface.region[region].extent), false)
+				this._map.setExtent(new Extent(this._interface.region[region].extent), true)
 			}
 						
 			this.loadInterface = function() {
@@ -511,7 +522,7 @@ define([
 				this._container.appendChild(this._containerPane.domNode);
 				
 				this.createInputs();
-				this.createDetailChart();
+				//this.createDetailChart();
 				
 				this.tip = domConstruct.create("div", { className: "plugin-ls help", tabindex: -1 });
 				domConstruct.create("div", {
@@ -616,21 +627,24 @@ define([
 					"padding": "0px",
 					"margin-top":"5px"
 				});
+				
+				this.mainStat = domConstruct.create("div", { class: "main-stat", innerHTML: "<span class='main-stat-value'></span>% of Shoreline Suitable for Living Shoreline" }, this.layersPane.containerNode);
+				
 				this.titleGroupPane = new TitleGroup({style:"height:auto;"});
 				
 				this.recommendationPane = new TitlePane({
-					title: "<i class='fa fa-caret-right tg-toggle-icon'></i>&nbsp;Living Shoreline (<span class='total'></span> total miles)",
+					title: "<i class='fa tg-toggle-icon'></i>&nbsp;Living Shoreline Suitability Types",
 					style:"width:100%;",
 					open:true
 				});
 				aspect.after(this.recommendationPane, "toggle", function(){
 					if (this.open) {
-						domClass.remove(this.titleNode.firstChild, "fa-caret-right");
-						domClass.add(this.titleNode.firstChild, "fa-caret-down");
+						domClass.remove(this.titleNode.firstChild, "fa-plus");
+						//domClass.add(this.titleNode.firstChild, "fa-minus");
 						self._featureLayer.show();
 					} else {
-						domClass.remove(this.titleNode.firstChild, "fa-caret-down");
-						domClass.add(this.titleNode.firstChild, "fa-caret-right");
+						//domClass.remove(this.titleNode.firstChild, "fa-minus");
+						domClass.add(this.titleNode.firstChild, "fa-plus");
 						self._featureLayer.hide();
 					}
 					self.updateMapLayers();
@@ -666,8 +680,9 @@ define([
 					var stat = domConstruct.create("div", { class: "stat-pill " + habitat}, statDiv);
 					domAttr.set(stat, "data-expression-value", self._interface.controls.habitat[habitat].value);
 					var number = domConstruct.create("div", { class: "stat-number" }, stat);
-					domConstruct.create("div", { class: "stat-value", innerHTML: 0 }, number);
-					domConstruct.create("div", { class: "stat-units", innerHTML: "miles"}, number);
+					domConstruct.create("div", { class: "stat-pct", innerHTML: 0 }, number);
+					domConstruct.create("div", { class: "stat-units", innerHTML: "%"}, number);
+					domConstruct.create("div", { class: "stat-dist", innerHTML: "(<span class='stat-value'></span> mi)" }, number);
 					domConstruct.create("div", { class: "stat-label", innerHTML: self._interface.controls.habitat[habitat].label }, stat);
 					domConstruct.create("div", { class: "stat-info", innerHTML:"<i class='fa fa-question-circle ls-" + self._map.id + "-stat-" + habitat + "'></i>"}, statDiv);
 					var statClose = domConstruct.create("div", { class: "stat-close icon-cancel close"}, statDiv);
@@ -699,10 +714,13 @@ define([
 					
 				});
 				
-				domConstruct.create("div", { 
+				var zoomDiv = domConstruct.create("div", { 
 					style:"line-height:14px;text-align:left;cursor:pointer;margin:15px 0px 10px 0px;font-size:12px;padding-left:30px;color:#777777;",
-					innerHTML: '-- zoom into map to select a shoreline segment for more details --'
+					innerHTML: '-- zoom in to map to select a shoreline segment for more details --'
 				},  self.statsControlPane.containerNode);
+				on(zoomDiv,"click",function(){
+					self._map.setScale(self.featureLayerScale);
+				});
 				
 				var detailDiv = domConstruct.create("div", {
 					class: "details"
@@ -710,7 +728,7 @@ define([
 				
 				domConstruct.create("div", {
 					class: "header",
-					innerHTML: "Details of Shoreline Recommendation"
+					innerHTML: "Details of Living Shoreline Suitability"
 				},  detailDiv);
 				
 				var closeDiv = domConstruct.create("div", {
@@ -745,6 +763,12 @@ define([
 				},  detailInner);
 				
 				var table = domConstruct.create("table", {}, content);
+				
+				var tr = domConstruct.create("tr", { class:"table-header" }, table);
+				domConstruct.create("td", {class:"table-header-cell", innerHTML:"Factor"}, tr);
+				domConstruct.create("td", {class:"table-header-cell", innerHTML:"Criteria"}, tr);
+				domConstruct.create("td", {class:"table-header-cell", innerHTML:"Score"}, tr);
+				
 				array.forEach(_.keys(this._interface.chart.labels.factors), function(key) {
 					var tr = domConstruct.create("tr", { class:key }, table);
 					domConstruct.create("td", {class:"label"}, tr);
@@ -757,18 +781,18 @@ define([
 				domConstruct.create("td", {class:"final-score"}, tr);
 				
 				this.factorPane = new TitlePane({
-					title: "<i class='fa fa-caret-right tg-toggle-icon'></i>&nbsp;Living Shoreline Factors",
+					title: "<i class='fa fa-plus tg-toggle-icon'></i>&nbsp;Living Shoreline Suitability Factors",
 					style:"width:100%;",
 					open:false
 				});
 				aspect.after(this.factorPane, "toggle", function(){
 					if (this.open) {
-						domClass.remove(this.titleNode.firstChild, "fa-caret-right");
-						domClass.add(this.titleNode.firstChild, "fa-caret-down");
+						domClass.remove(this.titleNode.firstChild, "fa-plus");
+						//domClass.add(this.titleNode.firstChild, "fa-minus");
 						self.updateFactors();
 					} else {
-						domClass.remove(this.titleNode.firstChild, "fa-caret-down");
-						domClass.add(this.titleNode.firstChild, "fa-caret-right");
+						//domClass.remove(this.titleNode.firstChild, "fa-minus");
+						domClass.add(this.titleNode.firstChild, "fa-plus");
 					}
 					self.updateMapLayers();
 				})
@@ -803,8 +827,9 @@ define([
 					var stat = domConstruct.create("div", { class: "stat-pill factor-" + factor}, factorsDiv);
 					domAttr.set(stat, "data-expression-value", factor);
 					var number = domConstruct.create("div", { class: "stat-number" }, stat);
-					domConstruct.create("div", { class: "stat-value", innerHTML: factor }, number);
-					domConstruct.create("div", { class: "stat-units", innerHTML: "miles"}, number);
+					domConstruct.create("div", { class: "stat-pct", innerHTML: 0 }, number);
+					domConstruct.create("div", { class: "stat-units", innerHTML: "%"}, number);
+					domConstruct.create("div", { class: "stat-dist", innerHTML: "(<span class='stat-value'></span> mi)" }, number);
 					domConstruct.create("div", { class: "stat-label " + factor, innerHTML:"" }, stat);
 					domConstruct.create("div", { class: "stat-score", innerHTML: factor }, stat);
 					domConstruct.create("div", { class: "stat-info", innerHTML:"<i class='fa fa-question-circle ls-" + self._map.id + "-stat-factor_" + factor + "'></i>"}, factorsDiv);
@@ -966,7 +991,9 @@ define([
 				array.forEach(nodes, function(node) {
 					var score = domAttr.get(node.parentNode, "data-expression-value");
 					if (!_.isUndefined(self._interface.controls.factors[score].label[value])) { 
-						var num =  self.totals[self._region].factors[value][score];
+						var num = self._interface.region[self._region].stats.dist.factors[value][score];
+						var pct = self._interface.region[self._region].stats.pct.factors[value][score];
+						_.first(query(".stat-pill.factor-" + score + " .stat-pct")).innerHTML = pct;
 						_.first(query(".stat-pill.factor-" + score + " .stat-value")).innerHTML = (num < 10) ? d3.format(".2f")(num) : d3.format(",.0f")(num);
 						node.innerHTML = self._interface.controls.factors[score].label[value];
 						domStyle.set(node.parentNode.parentNode, "display", "block");
@@ -978,10 +1005,12 @@ define([
 			
 			this.updateInterface = function(){
 				array.forEach(_.keys(this._interface.controls.habitat), function(habitat) {
-					var num = self.totals[self._region].habitat[habitat];
+					var num = self._interface.region[self._region].stats.dist.habitat[habitat];
+					var pct = self._interface.region[self._region].stats.pct.habitat[habitat];
+					_.first(query(".stat-pill." + habitat + " .stat-pct")).innerHTML = pct;
 					_.first(query(".stat-pill." + habitat + " .stat-value")).innerHTML = (num < 10) ? d3.format(".2f")(num) : d3.format(",.0f")(num);
 				});
-				_.first(query(".plugin-ls .dijitTitlePaneTitle span.total")).innerHTML = d3.format(",.0f")(self.totals[self._region].habitat.total);
+				_.first(query(".plugin-ls .main-stat-value")).innerHTML = self._interface.region[self._region].stats.pct.habitat.total;
 				
 				if (!this.recommendationPane.open) {
 					this.recommendationPane.toggle();
@@ -1031,21 +1060,26 @@ define([
 
 			this.createTooltips = function() {
 				on(query('*.fa[class*="ls-' + this._map.id + '"]'), "click", function(evt) {
-					self.showMessageDialog(this,"Place holder for documentation explaining different interface components.  No help documentation has been provided on this control but will be populated once received.")
-					/* var cssClass = _.last(domAttr.get(this, "class").split(" "));
-					var control = _.last(cssClass.split("-"));
 					var tooltips = (self._interface.region[self._region] && _.has(self._interface.region[self._region], "tooltips")) ? self._interface.region[self._region].tooltips : self._interface.tooltips;
-					var message = tooltips[control];
+					var cssClass = _.last(domAttr.get(this, "class").split(" "));
+					var control = _.last(cssClass.split("-"));
+					var s = control.split("_");
+					if (_.first(s) == "factor") {
+						var control = _.first(dojo.query(".plugin-ls .styled-radio input:checked")).value + "_" + _.last(s);
+					}
+					var title = tooltips[control].title;
+					var message = tooltips[control].text;
 					if (!_.isUndefined(message)) {
-						self.showMessageDialog(this, message);
-					} */
+						self.showMessageDialog(this, title, message);
+					}
 				});
 			}
 
-			this.showMessageDialog = function(node, message, position) {
+			this.showMessageDialog = function(node, title, message, position) {
+				_.first(query(".header", this.tip)).innerHTML = title;
 				_.first(query(".inner", this.tip)).innerHTML = message;
 				var top = domGeom.getMarginBox(this.layersPane.domNode).t;
-				var height = domGeom.position(this.layersPane.domNode).h;
+				var height = domGeom.position(this._plugin.container).h - top - 5;
 				domStyle.set(self.tip, {
 					"top": top + "px",
 					"height": height + "px"
