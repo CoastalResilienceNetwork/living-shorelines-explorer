@@ -221,7 +221,7 @@
 				"check": {}
 			},
 			"download": {
-				"report":""
+				"report":"http://media.coastalresilience.org/NC/Carteret_LivingShoreline_Summary.pdf"
 			},
 			"stats": {
 				"pct": {
@@ -320,7 +320,7 @@
 				"check": {}
 			},
 			"download": {
-				"report":""
+				"report":"http://media.coastalresilience.org/NC/Onslow_LivingShoreline_Summary.pdf"
 			},
 			"stats":{
 				"pct": {
