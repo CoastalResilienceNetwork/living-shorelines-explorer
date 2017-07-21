@@ -164,7 +164,7 @@
 				"check": {}
 			},
 			"download": {
-				"report":"https://coast.noaa.gov/floodexposure/#/services#flood-hazards"
+				"report":"http://media.coastalresilience.org/NC/Carteret_LivingShoreline_Summary.pdf"
 			}
 		},
 		"Onslow": {
@@ -240,7 +240,7 @@
 				"check": {}
 			},
 			"download": {
-				"report":"https://coast.noaa.gov/floodexposure/#/services#flood-hazards"
+				"report":"http://media.coastalresilience.org/NC/Onslow_LivingShoreline_Summary.pdf"
 			}
 		}
 	}
