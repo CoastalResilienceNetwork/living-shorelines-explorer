@@ -199,47 +199,49 @@ define([
 			
 			this.loadLayerStats = function() {
 				array.forEach(_.keys(this._interface.region), function(key) {
-					self._interface.region[key].stats.dist = {};
-					self._interface.region[key].stats.dist.habitat = {};
-					self._interface.region[key].stats.dist.factors = {};
-					
-					var q = new Query();
-					q.where = "1=1";
-					q.returnGeometry = false;
-					q.outFields = self._interface.region[key].query.habitat.outFields;
-					
-					var qt = new QueryTask(self._interface.region[key].query.habitat.url);
-					qt.execute(q, function(results) {
-						var habitat = self._interface.region[key].query.habitat.key;
-						var keyField = self._interface.region[key].query.habitat.keyField;
-						var valueField = self._interface.region[key].query.habitat.valueField;
+					if (!_.has(self._interface.region[key].stats, "dist")) {
+						self._interface.region[key].stats.dist = {};
+						self._interface.region[key].stats.dist.habitat = {};
+						self._interface.region[key].stats.dist.factors = {};
 						
-						array.forEach(results.features, function(row) {
-							self._interface.region[key].stats.dist.habitat[habitat[row.attributes[keyField]]] = row.attributes[valueField];
-						});
-						self._interface.region[key].stats.dist.habitat.total = _.reduce(_.values(self._interface.region[key].stats.dist.habitat), function(memo, num) { return memo + num }, 0)
+						var q = new Query();
+						q.where = "1=1";
+						q.returnGeometry = false;
+						q.outFields = self._interface.region[key].query.habitat.outFields;
 						
-						
-						array.forEach(_.keys(self._interface.region[key].query.factors), function(factor) {
-							self._interface.region[key].stats.dist.factors[factor] = {}
+						var qt = new QueryTask(self._interface.region[key].query.habitat.url);
+						qt.execute(q, function(results) {
+							var habitat = self._interface.region[key].key.habitat;
+							var keyField = self._interface.region[key].query.habitat.keyField;
+							var valueField = self._interface.region[key].query.habitat.valueField;
 							
-							var q = new Query();
-							q.where = "1=1";
-							q.returnGeometry = false;
-							q.outFields = self._interface.region[key].query.factors[factor].outFields;
+							array.forEach(results.features, function(row) {
+								self._interface.region[key].stats.dist.habitat[habitat[row.attributes[keyField]]] = row.attributes[valueField];
+							});
+							self._interface.region[key].stats.dist.habitat.total = _.reduce(_.values(self._interface.region[key].stats.dist.habitat), function(memo, num) { return memo + num }, 0)
 							
-							var qt = new QueryTask(self._interface.region[key].query.factors[factor].url);
-							qt.execute(q, function(results) {
-								var keyField = self._interface.region[key].query.factors[factor].keyField;
-								var valueField = self._interface.region[key].query.factors[factor].valueField;
+							
+							array.forEach(_.keys(self._interface.region[key].query.factors), function(factor) {
+								self._interface.region[key].stats.dist.factors[factor] = {}
 								
-								var total = _.reduce(_.map(results.features, function(row) { return row.attributes[valueField]; }) , function(memo, num) { return memo + num }, 0)
-								array.forEach(results.features, function(row) {
-									self._interface.region[key].stats.dist.factors[factor][row.attributes[keyField]] = row.attributes[valueField] / total * self._interface.region[key].stats.dist.habitat.total;
+								var q = new Query();
+								q.where = "1=1";
+								q.returnGeometry = false;
+								q.outFields = self._interface.region[key].query.factors[factor].outFields;
+								
+								var qt = new QueryTask(self._interface.region[key].query.factors[factor].url);
+								qt.execute(q, function(results) {
+									var keyField = self._interface.region[key].query.factors[factor].keyField;
+									var valueField = self._interface.region[key].query.factors[factor].valueField;
+									
+									var total = _.reduce(_.map(results.features, function(row) { return row.attributes[valueField]; }) , function(memo, num) { return memo + num }, 0)
+									array.forEach(results.features, function(row) {
+										self._interface.region[key].stats.dist.factors[factor][row.attributes[keyField]] = row.attributes[valueField] / total * self._interface.region[key].stats.dist.habitat.total;
+									});
 								});
 							});
 						});
-					});
+					}
 				});
 			}
 
@@ -283,14 +285,15 @@ define([
 								
 								var attributes = evt.graphic.attributes;
 								var data = {};
-								data.habitat = self._interface.region[self._region].query.habitat.key[attributes["INDEX"]];
-								data.final = attributes[self._interface.chart.fields.final];
-								
-								data.data = array.map(_.keys(self._interface.chart.fields.factors), function(key) {
-									return { "name": key, "value": attributes[self._interface.chart.fields.factors[key]] }
+								data.habitat = (!_.isUndefined(self._interface.region[self._region].key)) ? self._interface.region[self._region].key.habitat[attributes[self._interface.region[self._region].table.footer.label_field]] : attributes[self._interface.region[self._region].table.footer.label_field]
+								if (_.has(self._interface.region[self._region].table.footer, "score_field")){
+									data.final = attributes[self._interface.region[self._region].table.footer.score_field];
+								}
+								data.data = array.map(self._interface.region[self._region].table.rows.tr, function(row) {
+									return { "name": row.id, "value": attributes[row.field] }
 								})
 								
-								self.updateDetailChart(data);
+								self.updateDetailContent(data);
 							})
 							
 							/* on(mapLayer, "mouse-over", function(evt){
@@ -323,7 +326,8 @@ define([
 							node: node,
 							duration: 500,
 							onEnd: function(){
-								domStyle.set(node, "display", "none")
+								domStyle.set(node, "display", "none");
+								domStyle.set(_.first(query(".plugin-ls .details")).parentNode, "height", "auto"); 
 							}
 						};
 						fx.fadeOut(params).play();
@@ -331,123 +335,108 @@ define([
 				})
 			}
 			
-			this.createDetailChart = function() {
-				this.chart = {};
-				this.chart.position = this._interface.chart.position;
-				var colors = this._interface.chart.colors;
-				var domain = this._interface.chart.domain;
-				var data = this._interface.chart.data;
-				var tickValues = this._interface.chart.tickValues;
+			this.createDetailContent = function() {
+				var table = this.detailTable;
+				domConstruct.empty(table);
+				
+				//create table header
+				var header = this._interface.region[this._region].table.header;
+				var tr = domConstruct.create("tr", { class:"table-header" }, table);
+				array.forEach(header.td, function(td) {
+					domConstruct.create("td", {
+						class:"table-header-cell",
+						innerHTML: td.name,
+						style:"width:" + td.width
+					}, tr);
+				});
 
-				this.chart.x = d3.scale.linear()
-					.domain(domain)
-					.range([0, self.chart.position.width -  self.chart.position.margin.right]);
-					
-				var xAxis = d3.svg.axis()
-					.scale(self.chart.x)
-					.tickValues(tickValues)
-					.tickPadding(5)
-					.innerTickSize(0)
-					.outerTickSize(0)
-					.orient("bottom");
+				//create table rows
+				var rows = this._interface.region[this._region].table.rows;
+				array.forEach(rows.tr, function(row) {
+					var tr = domConstruct.create("tr", { class:row.id }, table);
+					array.forEach(header.td, function(td) {
+						var label = (td.css == "label") ? row.label : "";
+						domConstruct.create("td", { class:td.css, innerHTML:label }, tr);
+					})
+				});
 				
-				this.chart.plot = d3.select(".chart")
-					.append("svg")
-						.attr("width", self.chart.position.width + self.chart.position.margin.left + self.chart.position.margin.right)
-						.attr("height", self.chart.position.height + self.chart.position.margin.top + self.chart.position.margin.bottom)
-					.append("g")
-						.attr("transform", "translate(" + self.chart.position.margin.left + "," + self.chart.position.margin.top + ")");
-				
-				this.chart.plot.append("g")
-					  .attr("class", "x axis")
-					  .attr("transform", "translate(0," + self.chart.position.height + ")")
-					  .call(xAxis)
-					  .append("text")
-						  .attr("y", 12)
-						  .attr("x", self.chart.position.width/2)
-						  .style("text-anchor", "middle")
-						  .text("Factor Score");
-				
-				this.chart.plot.selectAll("rect")
-					.data(data)
-					.enter().append("rect")
-						.attr("height", 22)
-						.attr("width", function(d) { return (d.value == 0) ? (self.chart.x(d.value) + 16) : self.chart.x(d.value); })
-						.attr("x", 0)
-						.attr("y", function(d,i) { return (i * 25); })
-						.attr("fill", function(d) {  return colors.scores[d.value]; })
-						.on("mouseover", function(d) {
-							domClass.add(_.first(query(".plugin-ls .details .content tr." + d.name)), "bar-on-table")
-						})
-						.on("mouseout", function(d) {
-							domClass.remove(_.first(query(".plugin-ls .details .content tr." + d.name)), "bar-on-table")
-						})
-									
-				this.chart.plot.selectAll("text.bar-labels")
-					.data(data)
-					.enter().append("text")
-						.text(function(d) { return d.value })
-							.attr("class", "bar-labels")
-							.attr("text-anchor", "end")
-							.attr("x", function(d) { return (d.value == 0) ? 12 : self.chart.x(d.value) - 5; })
-							.attr("y", function(d, i) { return  (i * 25) + 16 });
-							
-				this.chart.plot.selectAll("text.bar-axis")
-					.data(data)
-					.enter().append("text")
-						.text(function(d) { return d.axis; })
-							.attr("class", "bar-axis")
-							.attr("text-anchor", "end")
-							.attr("x", -5 )
-							.attr("y", function(d, i) { return  (i * 25) + 16 });
+				//create table "footer"
+				var colspan = this._interface.region[this._region].table.footer.colspan
+				var tr = domConstruct.create("tr", { class:"final-rec" }, table);
+				domConstruct.create("td", {class:"category", colspan: colspan}, tr);
+				if (_.has(this._interface.region[this._region].table.footer, "score_field")){
+					domConstruct.create("td", {class:"final-score"}, tr);
+				}
 			}
 			
-			this.updateDetailChart = function(data) {
-				var colors = this._interface.chart.colors;
-				var labels = this._interface.chart.labels;
-				
-				/* this.chart.plot.selectAll('rect')
-					.data(data.data)
-					.transition()
-					.duration(500)
-						.attr("width", function(d) {   return (d.value == 0) ? (self.chart.x(d.value) + 16) : self.chart.x(d.value);  })
-						.attr("fill", function(d) {  return colors.scores[d.value]; })
+			this.updateDetailContent = function(data) {
+				var colors = this._interface.region[this._region].colors;
+				var labels = this._interface.region[this._region].labels;
 						
-				this.chart.plot.selectAll('text.bar-labels')
-					.data(data.data)
-					.transition()
-					.duration(500)
-						.text(function(d) { return d.value })
-							.attr("x", function(d) { return (d.value == 0) ? 12 : self.chart.x(d.value) - 5 })
-							.attr("y", function(d, i) { return  (i * 25) + 16 }); */
-						
-				_.first(query(".plugin-ls .details .content td.category")).innerHTML = labels.habitat[data.habitat];
-				_.first(query(".plugin-ls .details .content td.final-score")).innerHTML = data.final;
 				query(".plugin-ls .details .content tr.final-rec").style("color", colors.habitat[data.habitat]);
-				
+				_.first(query(".plugin-ls .details .content td.category")).innerHTML = labels.habitat[data.habitat].replace("<br>"," ");
+				if (_.has(this._interface.region[this._region].table.footer, "score_field")){
+					_.first(query(".plugin-ls .details .content td.final-score")).innerHTML = data.final;
+				}
 				
 				array.forEach(data.data, function(d) {
-					_.first(query(".plugin-ls .details .content tr." + d.name + " td.label")).innerHTML = labels.factors[d.name];
-					_.first(query(".plugin-ls .details .content tr." + d.name + " td.value")).innerHTML = labels.scores[d.value][d.name];
+					if (query(".plugin-ls .details .content tr." + d.name + " td.value").length > 0) {
+						_.first(query(".plugin-ls .details .content tr." + d.name + " td.value")).innerHTML = labels.scores[d.value][d.name];
+					}
 					_.first(query(".plugin-ls .details .content tr." + d.name + " td.score")).innerHTML = d.value;
 				})
+				
+				var height = (this._interface.region[this._region].table.parent_height) ? this._interface.region[this._region].table.parent_height : "auto";
+				domStyle.set(_.first(query(".plugin-ls .details")).parentNode, "height", height); 
+				
 			}
 			
 			this.updateMapLayers = function() {
 				var scale = (this._map.getScale() > this.featureLayerScale) ? "small" : "large";
-				var visibleIds = (this.recommendationPane.open) ? this._interface.region[this._region].layers.main.scaleRangeIds[scale] : self._data.region[self._region]["county"];
+				var visibleIds = (this.recommendationPane.open) ? this._interface.region[this._region].layers.main.scaleRangeIds[scale] : (_.has(self._data.region[self._region], "county")) ? self._data.region[self._region]["county"] : [];
 				
-				array.forEach(_.keys(this._interface.controls.radio), function(rb) {
-					if (self[rb + "RadioButton"].checked && !self.recommendationPane.open) {
-						visibleIds = _.union(visibleIds, self._data.region[self._region][rb]);
-					}
-				});
+				if (this._interface.region[this._region].interface.factors.controls.show.radio.length > 0) {
+					array.forEach(_.keys(this._interface.controls.factors.radio), function(rb) {
+						if (self[rb + "RadioButton"].checked && !self.recommendationPane.open) {
+							visibleIds = _.union(visibleIds, self._data.region[self._region][rb]);
+						}
+					});
+				}
 				
-				array.forEach(_.keys(this._interface.controls.check), function(cb) {
-					if (self[cb + "CheckBox"].checked) {
-						visibleIds = _.union(visibleIds, self._data.region[self._region][cb]);
-					}
-				});
+				if (this._interface.region[this._region].interface.factors.controls.show.togglebutton.length > 0) {
+					array.forEach(this._interface.region[this._region].interface.factors.controls.show.togglebutton, function(tb) {
+						if (!self.recommendationPane.open) {
+							var value = _.first(query("input[name='" + tb + "']:checked")).value;
+							visibleIds = _.union(visibleIds, self._data.region[self._region][value]);
+							
+							var control = self._interface.controls.factors.togglebutton[tb].controls[value];
+							if (_.has(control,"dependency")) {
+								array.forEach(_.keys(control.dependency.show), function(d) {
+									if (d == "select") {
+										array.forEach(control.dependency.show[d], function(c) {
+											visibleIds = _.union(visibleIds, self._data.region[self._region][self[c + "Select"].value]);
+										})
+									}
+								})
+								array.forEach(_.keys(control.dependency.enable), function(d) {
+									if (d == "select") {
+										array.forEach(control.dependency.enable[d], function(c) {
+											visibleIds = _.union(visibleIds, self._data.region[self._region][self[c + "Select"].value]);
+										})
+									}
+								})
+							}
+						}
+					});
+				}
+				
+				if (this._interface.region[this._region].interface.other.controls.show.check.length > 0) {
+					array.forEach(_.keys(this._interface.controls.check), function(cb) {
+						if (self[cb + "CheckBox"].checked) {
+							visibleIds = _.union(visibleIds, self._data.region[self._region][cb]);
+						}
+					});
+				}
 				
 				this._mapLayer.setVisibleLayers(visibleIds);
 			}
@@ -470,6 +459,7 @@ define([
 			
 			this.setDefinitionExpression = function(pane, value, type) {
 				var layerDefs = (!_.isUndefined(this._mapLayer.layerDefinition)) ? this._mapLayer.layerDefinition : [];
+				value = (_.isNaN(parseInt(value))) ? "'" + value + "'" : value;
 				switch(pane) {
 					case "habitat":
 						var def = this._interface.region[this._region].definitionExpression.habitat.field + " = " + value;
@@ -572,7 +562,15 @@ define([
 					domStyle.set(self.inputsPane.containerNode, { "width": "100%", "height": "auto" });
 				});
 				
-				var table = domConstruct.create("table", { style:"position:relative;width: 100%;background: none;border: none; margin:0px 0px 0px 0px;"}, this.inputsPane.containerNode);
+				domConstruct.create("div", { 
+					class:"plugin-desc"
+				}, this.inputsPane.containerNode);
+				
+				var display = (_.keys(this._interface.region).length > 1) ? "block" : "none";
+				
+				var table = domConstruct.create("table", {
+					style:"position:relative;width: 100%;background: none;border: none; margin:0px 0px 0px 0px;display:" + display
+				}, this.inputsPane.containerNode);
 				var tr = domConstruct.create("tr", {}, table);
 				var regionTd = domConstruct.create("td", { "colspan":3, "style": "padding-bottom:10px;" }, tr);
 				
@@ -672,18 +670,25 @@ define([
 					"border": "none",
 					"width": "100%",
 					"height": "auto",
-					"padding-top": "5px"
+					"padding-top": "10px"
 				});
 				
-				array.forEach(_.keys(this._interface.controls.habitat), function(habitat, i) {
-					var statDiv = domConstruct.create("div", { class: "stat"}, self.statsControlPane.containerNode);
-					var stat = domConstruct.create("div", { class: "stat-pill " + habitat}, statDiv);
-					domAttr.set(stat, "data-expression-value", self._interface.controls.habitat[habitat].value);
+				array.forEach(_.keys(this._interface.controls.recommendation.pills), function(habitat, i) {
+					var statDiv = domConstruct.create("div", {
+						class: "stat",
+						style:"margin-bottom:10px;margin-top:" + ((i == 0) ? 0 : 10)  + "px;"
+					}, self.statsControlPane.containerNode);
+					
+					var stat = domConstruct.create("div", { 
+						class: "stat-pill " + habitat
+					}, statDiv);
+					domAttr.set(stat, "data-expression-value", self._interface.controls.recommendation.pills[habitat].value);
+					
 					var number = domConstruct.create("div", { class: "stat-number" }, stat);
 					domConstruct.create("div", { class: "stat-pct", innerHTML: 0 }, number);
 					domConstruct.create("div", { class: "stat-units", innerHTML: "%"}, number);
 					domConstruct.create("div", { class: "stat-dist", innerHTML: "(<span class='stat-value'></span> mi)" }, number);
-					domConstruct.create("div", { class: "stat-label", innerHTML: self._interface.controls.habitat[habitat].label }, stat);
+					domConstruct.create("div", { class: "stat-label", innerHTML: self._interface.controls.recommendation.pills[habitat].label }, stat);
 					domConstruct.create("div", { class: "stat-info", innerHTML:"<i class='fa fa-question-circle ls-" + self._map.id + "-stat-" + habitat + "'></i>"}, statDiv);
 					var statClose = domConstruct.create("div", { class: "stat-close icon-cancel close"}, statDiv);
 					
@@ -745,6 +750,7 @@ define([
 						},
 						onEnd: function(){
 							domStyle.set(node, "display", "none");
+							domStyle.set(_.first(query(".plugin-ls .details")).parentNode, "height", "auto"); 
 						}
 					};
 					fx.fadeOut(params).play();
@@ -762,29 +768,15 @@ define([
 					class: "content"
 				},  detailInner);
 				
-				var table = domConstruct.create("table", {}, content);
-				
-				var tr = domConstruct.create("tr", { class:"table-header" }, table);
-				domConstruct.create("td", {class:"table-header-cell", innerHTML:"Factor"}, tr);
-				domConstruct.create("td", {class:"table-header-cell", innerHTML:"Criteria"}, tr);
-				domConstruct.create("td", {class:"table-header-cell", innerHTML:"Score"}, tr);
-				
-				array.forEach(_.keys(this._interface.chart.labels.factors), function(key) {
-					var tr = domConstruct.create("tr", { class:key }, table);
-					domConstruct.create("td", {class:"label"}, tr);
-					domConstruct.create("td", {class:"value"}, tr);
-					domConstruct.create("td", {class:"score"}, tr);
-				})
-				
-				var tr = domConstruct.create("tr", { class:"final-rec" }, table);
-				domConstruct.create("td", {class:"category", colspan:2}, tr);
-				domConstruct.create("td", {class:"final-score"}, tr);
+				this.detailTable = domConstruct.create("table", {}, content);
 				
 				this.factorPane = new TitlePane({
 					title: "<i class='fa fa-plus tg-toggle-icon'></i>&nbsp;Living Shoreline Suitability Factors",
 					style:"width:100%;",
 					open:false
 				});
+				domStyle.set(this.factorPane.containerNode, { "padding-top": "10px", "padding-bottom":"20px" })
+				
 				aspect.after(this.factorPane, "toggle", function(){
 					if (this.open) {
 						domClass.remove(this.titleNode.firstChild, "fa-plus");
@@ -819,132 +811,241 @@ define([
 					"border": "none",
 					"width": "100%",
 					"height": "auto",
-					"padding-top": "5px"
+					"padding-top":"0px"
 				});
 				
-				array.forEach(_.keys(this._interface.controls.factors).reverse(), function(factor, i) {
-					var factorsDiv = domConstruct.create("div", { class: "stat"}, self.factorControlPane.containerNode);
-					var stat = domConstruct.create("div", { class: "stat-pill factor-" + factor}, factorsDiv);
-					domAttr.set(stat, "data-expression-value", factor);
-					var number = domConstruct.create("div", { class: "stat-number" }, stat);
-					domConstruct.create("div", { class: "stat-pct", innerHTML: 0 }, number);
-					domConstruct.create("div", { class: "stat-units", innerHTML: "%"}, number);
-					domConstruct.create("div", { class: "stat-dist", innerHTML: "(<span class='stat-value'></span> mi)" }, number);
-					domConstruct.create("div", { class: "stat-label " + factor, innerHTML:"" }, stat);
-					domConstruct.create("div", { class: "stat-score", innerHTML: factor }, stat);
-					domConstruct.create("div", { class: "stat-info", innerHTML:"<i class='fa fa-question-circle ls-" + self._map.id + "-stat-factor_" + factor + "'></i>"}, factorsDiv);
-					
-					var factorClose = domConstruct.create("div", { class: "stat-close icon-cancel close"}, factorsDiv);
-					on(factorClose, "click", function(evt){
-						query(".plugin-ls .factors .stat-pill").removeClass("inactive");
-						query(".stat-close", this.parentNode).style("display", "none");
+				if (!_.isUndefined(self._interface.controls.factors.pills)) {
+					array.forEach(_.keys(this._interface.controls.factors.pills).reverse(), function(factor, i) {
+						var factorsDiv = domConstruct.create("div", { 
+							class: "stat",
+							style:"margin-bottom:10px;margin-top:" + ((i == 0) ? 0 : 10)  + "px;"
+						}, self.factorControlPane.containerNode);
 						
-						var type = _.first(dojo.query(".plugin-ls .styled-radio input:checked")).value;
-						self.clearDefinitionExpression("factor", type);
-					})
-					
-					on(stat, "mouseover", function(){
-						domClass.add(this, "stat-over");
-					})
-					on(stat, "mouseout", function(){
-						domClass.remove(this, "stat-over");
-					})
-					on(stat, "click", function(){
-						query(".plugin-ls .factors .stat-pill").addClass("inactive");
-						domClass.remove(this, "inactive");
-						query(".factors .stat-close").style("display", "none");
-						query(".stat-close", this.parentNode).style("display", "block");
+						var stat = domConstruct.create("div", {
+							class: "stat-pill factor" 
+						}, factorsDiv);
+						domAttr.set(stat, "data-expression-value", factor);
 						
-						var value = domAttr.get(this, "data-expression-value");
-						var type = _.first(dojo.query(".plugin-ls .styled-radio input:checked")).value;
-						self.setDefinitionExpression("factor", value, type);
-					})
-				});
+						var number = domConstruct.create("div", { class: "stat-number" }, stat);
+						domConstruct.create("div", { class: "stat-pct", innerHTML: 0 }, number);
+						domConstruct.create("div", { class: "stat-units", innerHTML: "%"}, number);
+						domConstruct.create("div", { class: "stat-dist", innerHTML: "(<span class='stat-value'></span> mi)" }, number);
+						domConstruct.create("div", { class: "stat-label " + factor, innerHTML:"" }, stat);
+						domConstruct.create("div", { class: "stat-score", innerHTML: factor }, stat);
+						domConstruct.create("div", { class: "stat-info", innerHTML:"<i class='fa fa-question-circle ls-" + self._map.id + "-stat-factor_" + factor + "'></i>"}, factorsDiv);
+						
+						var factorClose = domConstruct.create("div", { class: "stat-close icon-cancel close"}, factorsDiv);
+						on(factorClose, "click", function(evt){
+							query(".plugin-ls .factors .stat-pill").removeClass("inactive");
+							query(".stat-close", this.parentNode).style("display", "none");
+							
+							var type = _.first(dojo.query(".plugin-ls .styled-radio input:checked")).value;
+							self.clearDefinitionExpression("factor", type);
+						})
+						
+						on(stat, "mouseover", function(){
+							domClass.add(this, "stat-over");
+						})
+						on(stat, "mouseout", function(){
+							domClass.remove(this, "stat-over");
+						})
+						on(stat, "click", function(){
+							query(".plugin-ls .factors .stat-pill").addClass("inactive");
+							domClass.remove(this, "inactive");
+							query(".factors .stat-close").style("display", "none");
+							query(".stat-close", this.parentNode).style("display", "block");
+							
+							var value = domAttr.get(this, "data-expression-value");
+							var type = _.first(dojo.query(".plugin-ls .styled-radio input:checked")).value;
+							self.setDefinitionExpression("factor", value, type);
+						})
+					});
+				}
 				
 				var cp = new ContentPane({}, this.factorPane.containerNode);
-				var rbDiv = domConstruct.create("div", { style:"margin-bottom:20px;height:auto"}, cp.containerNode);
-				array.forEach(_.keys(this._interface.controls.radio), function(rb) {
-					var div = domConstruct.create("div",{ style:"position:relative;margin-bottom:5px;"}, rbDiv);
-					var rb = self._interface.controls.radio[rb];
-					var radioButtonLabel = domConstruct.create("label", { 
-						className:"styled-radio",
-						style:"margin:0px 0px 0px 25px;", 
-						for: "plugin-ls-" + rb.name + "-" + self._map.id
-						}, div);
-					
-					self[rb.name + "RadioButton"] = domConstruct.create("input", { 
-						type: "radio", 
-						value: rb.value, 
-						name: rb.group, 
-						id: "plugin-ls-" + rb.name + "-" + self._map.id
-					}, radioButtonLabel);
-					
-					if (rb.checked) { self[rb.name + "RadioButton"].checked = true }
-					
-					domConstruct.create("span", {
-						innerHTML:rb.label 
-					}, radioButtonLabel );
-					
-					on(self[rb.name + "RadioButton"] , "change", function() {
-						self.updateFactors();
+				
+				this.toggleContainerDiv = domConstruct.create("div", {
+					class:"togglebutton-container-div"
+				}, cp.containerNode);
+				
+				if (!_.isUndefined(self._interface.controls.factors.togglebutton)) {
+					array.forEach(_.keys(self._interface.controls.factors.togglebutton), function(g) {
+						var show = (self._interface.controls.factors.togglebutton[g].show) ? "block" : "none"; 
+						var toggleDiv = domConstruct.create("div", {
+							className: "togglebutton-div " + g,
+							style: "margin-top: 5px;display:" + show
+						}, self.toggleContainerDiv);
 						
-						array.forEach(_.keys(self._interface.region[self._region].query.factors), function(key) {
-							window.setTimeout(function(){ 
-								self.clearDefinitionExpression("factor", key);
-							}, 500)
-						});
-						query(".plugin-ls .factors .stat-pill").removeClass("inactive");
-						query(".plugin-ls .factors .stat-close").style("display", "none");
+						if (self._interface.controls.factors.togglebutton[g].label) {
+							domConstruct.create("div", {
+								innerHTML: '<i class="fa fa-question-circle ls-' + self._map.id + '-togglegroup_' + g + '"></i>&nbsp;<b>' + self._interface.controls.factors.togglebutton[g].label + '</b>'
+								}, toggleDiv);
+						}
 						
-						self.updateMapLayers();
+						var containerDiv = domConstruct.create("div", {
+							className: "toggle-btn " + g
+						}, toggleDiv);
 						
-						
+						var rbs = _.values(self._interface.controls.factors.togglebutton[g].controls)
+						array.forEach(rbs, function(rb) {
+							self[rb.name + "ToggleButton"] = domConstruct.create("input", { 
+								type: "radio", 
+								value: rb.value, 
+								name: rb.group, 
+								id: "plugin-ls-togglebutton-" + rb.group + "-" + rb.name + "-" + self._map.id
+							}, containerDiv);
+							
+							if (rb.checked) { self[rb.name + "ToggleButton"].checked = true }
+							
+							domConstruct.create("label", { 
+								for: "plugin-ls-togglebutton-" + rb.group + "-" + rb.name + "-" + self._map.id,
+								innerHTML: rb.label
+							}, containerDiv);
+							
+							on(self[rb.name + "ToggleButton"] , "change", function() {
+								if (this.checked) {
+									self.setControlDependency("factors","togglebutton", this.value, this.name);
+								}
+								if (this.checked && self._region != "") {
+									self.updateMapLayers();
+								}
+							});
+						}); 
 					});
+				}
+				
+				if (!_.isUndefined(self._interface.controls.factors.select)) {
+					var selectContainerDiv = domConstruct.create("div", {
+						className: "select-container-div"
+					}, cp.containerNode);
 					
-					domConstruct.create("div", {
-						style:"position:absolute;top:4px;left:380px;",
-						innerHTML: "<i class='fa fa-question-circle ls-" + self._map.id + "-" + rb.name + "'></i>"
-					}, div);
-				})
+					array.forEach(_.keys(this._interface.controls.factors.select), function(i) {						
+						var s = self._interface.controls.factors.select[i];	
+						var show = (s.show) ? "block" : "none";					
+						var color = (s.disabled) ? "#d3d3d3" : "#333333";
+						
+						var selectContainer = domConstruct.create("div", {
+							style: "display:" + show + ";color:" + color,
+							className:"select-div " + i
+						}, selectContainerDiv);
+						
+						var text = domConstruct.create("div", {
+							style: "position:relative;margin-bottom:5px;",
+							innerHTML: '<b>' + s.label + '</b>'
+						}, selectContainer);
+						
+						var selectDiv = domConstruct.create("div", {
+							className: "styled-select",
+							style:"width:100%;display:block;margin-bottom:5px;"
+						}, selectContainer);
+						
+						self[i + "Select"] = domConstruct.create("select", {
+							name: i,
+							disabled: s.disabled
+						}, selectDiv);
+						
+						array.forEach(s.options, function(item) {
+							domConstruct.create("option", { innerHTML: item.name, value: item.value },self[i + "Select"]);
+						});
+
+						on(self[i + "Select"], "change", function() { 
+							self.updateMapLayers();
+						});
+					})
+					
+				}
+				
+				if (!_.isUndefined(self._interface.controls.factors.radio)) {
+					var rbDiv = domConstruct.create("div", { style:"height:auto"}, cp.containerNode);
+					array.forEach(_.keys(this._interface.controls.factors.radio), function(rb) {
+						var rb = self._interface.controls.factors.radio[rb];
+						
+						var div = domConstruct.create("div",{
+							style:"position:relative;margin-bottom:5px;",
+							class:"radio-div " + rb.name
+						}, rbDiv);
+						
+						var radioButtonLabel = domConstruct.create("label", { 
+							className:"styled-radio",
+							style:"margin:0px 0px 0px 25px;", 
+							for: "plugin-ls-" + rb.name + "-" + self._map.id
+							}, div);
+						
+						self[rb.name + "RadioButton"] = domConstruct.create("input", { 
+							type: "radio", 
+							value: rb.value, 
+							name: rb.group, 
+							id: "plugin-ls-" + rb.name + "-" + self._map.id
+						}, radioButtonLabel);
+						
+						if (rb.checked) { self[rb.name + "RadioButton"].checked = true }
+						
+						domConstruct.create("span", {
+							innerHTML:rb.label 
+						}, radioButtonLabel );
+						
+						on(self[rb.name + "RadioButton"] , "change", function() {
+							self.updateFactors();
+							
+							array.forEach(_.keys(self._interface.region[self._region].query.factors), function(key) {
+								window.setTimeout(function(){ 
+									self.clearDefinitionExpression("factor", key);
+								}, 500)
+							});
+							query(".plugin-ls .factors .stat-pill").removeClass("inactive");
+							query(".plugin-ls .factors .stat-close").style("display", "none");
+							
+							self.updateMapLayers();
+							
+						});
+						
+						domConstruct.create("div", {
+							style:"position:absolute;top:4px;left:380px;",
+							innerHTML: "<i class='fa fa-question-circle ls-" + self._map.id + "-" + rb.name + "'></i>"
+						}, div);
+					})
+				}
 				
 				this.layersPane.addChild(this.titleGroupPane);
 				this.titleGroupPane.startup();
-				
-				var cp = new ContentPane({ style:"width:100%;margin-top:10px;position: relative;" });
+
+				var cp = new ContentPane({
+					style:"width:100%;margin-top:10px;position: relative;min-height:28px"
+				});
 				this._containerPane.domNode.appendChild(cp.domNode);
 				
-				domConstruct.create("div", { class:"add-layers-header", innerHTML: "Additional Layers" }, cp.containerNode);
-				domConstruct.create("div", { class:"add-layers-instructions", innerHTML: "Learn more about data used as part of these recommendations by selecting from the additional layers below:" }, cp.containerNode);
-				
-				var checkBoxDiv = domConstruct.create("div", {}, cp.containerNode);
-				array.forEach(_.keys(this._interface.controls.check), function(cb) {
-					var cb = self._interface.controls.check[cb];
-					var checkBoxLabel = domConstruct.create("label", { 
-						for: "plugin-ls-" + cb.name + "-" + self._map.id,
-						className:"styled-checkbox",
-						style:"display:block;margin-left:20px;"
-					}, checkBoxDiv);
+				if (!_.isUndefined(self._interface.controls.other.check)) {
+					var other = domConstruct.create("div", { class:"other"}, cp.containerNode);
+					domConstruct.create("div", { class:"add-layers-header", innerHTML: "Additional Layers" }, other);
+					domConstruct.create("div", { class:"add-layers-instructions", innerHTML: "Learn more about data used as part of these recommendations by selecting from the additional layers below:" }, other);
 					
-					self[cb.name + "CheckBox"] = domConstruct.create("input", {
-						type:"checkbox",
-						value:cb.value,
-						name:cb.name,
-						id:"plugin-ls-" + cb.name + "-" + self._map.id,
-						disabled:false,
-						checked:false
-					}, checkBoxLabel);
-					
-					domConstruct.create("div", {
-						innerHTML: '<span>' + cb.label +'</span>'
-					}, checkBoxLabel);
-					
-					on(self[cb.name + "CheckBox"], "change", function(){
-						self.updateMapLayers();
+					var checkBoxDiv = domConstruct.create("div", {}, other);
+					array.forEach(_.keys(this._interface.controls.other.check), function(cb) {
+						var cb = self._interface.controls.other.check[cb];
+						var checkBoxLabel = domConstruct.create("label", { 
+							for: "plugin-ls-" + cb.name + "-" + self._map.id,
+							className:"styled-checkbox",
+							style:"display:block;margin-left:20px;"
+						}, checkBoxDiv);
+						
+						self[cb.name + "CheckBox"] = domConstruct.create("input", {
+							type:"checkbox",
+							value:cb.value,
+							name:cb.name,
+							id:"plugin-ls-" + cb.name + "-" + self._map.id,
+							disabled:false,
+							checked:false
+						}, checkBoxLabel);
+						
+						domConstruct.create("div", {
+							innerHTML: '<span>' + cb.label +'</span>'
+						}, checkBoxLabel);
+						
+						on(self[cb.name + "CheckBox"], "change", function(){
+							self.updateMapLayers();
+						});
 					});
-				});
-				
-				/* var cp = new ContentPane({ style:"width:100%;margin-top:0px;" });
-				this._containerPane.domNode.appendChild(cp.domNode); */
+				}
 				
 				var opacity = domConstruct.create("div", {
 					className: "utility-control",
@@ -981,34 +1082,55 @@ define([
 			    });
 				this.opacityContainer.appendChild(this.opacitySlider.domNode);
 				
-				
 			}
 			
 			this.updateFactors = function() {
-				var value = _.first(dojo.query(".plugin-ls .styled-radio input:checked")).value;
-				var nodes = query('.plugin-ls .stat-pill[class*="factor-"] .stat-label');
-				
-				array.forEach(nodes, function(node) {
-					var score = domAttr.get(node.parentNode, "data-expression-value");
-					if (!_.isUndefined(self._interface.controls.factors[score].label[value])) { 
-						var num = self._interface.region[self._region].stats.dist.factors[value][score];
-						var pct = self._interface.region[self._region].stats.pct.factors[value][score];
-						_.first(query(".stat-pill.factor-" + score + " .stat-pct")).innerHTML = pct;
-						_.first(query(".stat-pill.factor-" + score + " .stat-value")).innerHTML = (num < 10) ? d3.format(".2f")(num) : d3.format(",.0f")(num);
-						node.innerHTML = self._interface.controls.factors[score].label[value];
-						domStyle.set(node.parentNode.parentNode, "display", "block");
-					} else {
-						domStyle.set(node.parentNode.parentNode, "display", "none");
-					}
-				})
+				if (self._interface.region[self._region].interface.factors.display) {
+					var value = _.first(dojo.query(".plugin-ls .styled-radio input:checked")).value;
+					var nodes = query('.plugin-ls .stat-pill.factor .stat-label');
+					
+					array.forEach(nodes, function(node) {
+						var score = domAttr.get(node.parentNode, "data-expression-value");
+						if (!_.isUndefined(self._interface.controls.factors.pills[score].label[value])) { 
+							var num = self._interface.region[self._region].stats.dist.factors[value][score];
+							var pct = self._interface.region[self._region].stats.pct.factors[value][score];
+							
+							query('div.stat-pill.factor[data-expression-value=' + score + ']').style("background-color", self._interface.region[self._region].colors.scores[score]);
+							_.first(query("div.stat-pill.factor[data-expression-value=" + score + "] .stat-pct")).innerHTML = pct;
+							_.first(query("div.stat-pill.factor[data-expression-value=" + score + "] .stat-value")).innerHTML = (num < 10) ? d3.format(".2f")(num) : d3.format(",.0f")(num);
+							
+							node.innerHTML = self._interface.controls.factors.pills[score].label[value];
+							domStyle.set(node.parentNode.parentNode, "display", "block");
+						} else {
+							domStyle.set(node.parentNode.parentNode, "display", "none");
+						}
+					})
+				}
 			}
 			
 			this.updateInterface = function(){
-				array.forEach(_.keys(this._interface.controls.habitat), function(habitat) {
+				var ui = this._interface.region[this._region].interface;
+				
+				if (ui.description.show) {
+					_.first(query(".plugin-ls .plugin-desc")).innerHTML = ui.description.label;
+					query(".plugin-ls .plugin-desc").style("display", "block");
+				} else {
+					query(".plugin-ls .plugin-desc").style("display", "none");
+				}
+				
+				array.forEach(_.keys(this._interface.controls.recommendation.pills), function(habitat) {
+					var label = self._interface.region[self._region].labels.habitat[habitat];
+					var color = self._interface.region[self._region].colors.habitat[habitat];
+					_.first(query(".stat-pill." + habitat + " .stat-label")).innerHTML = label;
+					query(".stat-pill." + habitat).style("background-color", color);
+					
 					var num = self._interface.region[self._region].stats.dist.habitat[habitat];
 					var pct = self._interface.region[self._region].stats.pct.habitat[habitat];
 					_.first(query(".stat-pill." + habitat + " .stat-pct")).innerHTML = pct;
 					_.first(query(".stat-pill." + habitat + " .stat-value")).innerHTML = (num < 10) ? d3.format(".2f")(num) : d3.format(",.0f")(num);
+					
+					var value = self._interface.region[self._region].definitionExpression.habitat.values[habitat];
+					domAttr.set(_.first(query(".stat-pill." + habitat)), "data-expression-value", value);
 				});
 				_.first(query(".plugin-ls .main-stat-value")).innerHTML = self._interface.region[self._region].stats.pct.habitat.total;
 				
@@ -1017,22 +1139,56 @@ define([
 					this.factorPane.toggle();
 				}
 				
-				this[_.first(_.keys(this._interface.controls.radio)) + "RadioButton"].checked = true;
-				array.forEach(_.keys(this._interface.controls.check), function(key) {
-					self[key + "CheckBox"].checked = false;
+				var display = (ui.factors.display) ? "block" : "none";
+				query(".stats.factors").style("display", display);
+				
+				array.forEach(_.keys(ui.factors.controls.hide), function(type) {
+					array.forEach(ui.factors.controls.hide[type], function(control) {
+						query("." + type + "-div." + control).style("display","none")
+					})
 				})
+				
+				array.forEach(_.keys(ui.factors.controls.show), function(type) {
+					array.forEach(ui.factors.controls.show[type], function(control) {
+						query("." + type + "-div." + control).style("display","block")
+					})
+					if (type == "radio" && ui.factors.controls.show[type].length > 0) {
+						self[_.first(ui.factors.controls.show[type]) + "RadioButton"].checked = true;
+					}
+					if (type == "togglebutton" && ui.factors.controls.show[type].length > 0) {
+						array.forEach(ui.factors.controls.show[type], function(control) {
+							var tb = self[_.first(_.keys(self._interface.controls.factors.togglebutton[control].controls)) + "ToggleButton"];
+							tb.checked = true;
+							self.setControlDependency("factors","togglebutton", tb.value, tb.name);
+						});
+					}
+				})
+				
+				var display = (ui.other.display) ? "block" : "none";
+				query(".plugin-ls .other").style("display", display);
+				
+				if (!_.isUndefined(this._interface.controls.other.check)) {
+					array.forEach(_.keys(this._interface.controls.other.check), function(key) {
+						self[key + "CheckBox"].checked = false;
+					})
+				}
 				
 				if (!_.isUndefined(this._featureLayer) && !_.isEmpty(this._featureLayer)) {
 					this.clearDefinitionExpression("habitat");
-					array.forEach(_.keys(this._interface.region[this._region].query.factors), function(key) {
-						window.setTimeout(function(){ 
-							self.clearDefinitionExpression("factor", key);
-						}, 500)
-					});
+					if (_.has(self._interface.region[self._region].definitionExpression, "factors")) {
+						array.forEach(_.keys(this._interface.region[this._region].query.factors), function(key) {
+							window.setTimeout(function(){ 
+								self.clearDefinitionExpression("factor", key);
+							}, 500)
+						});
+					}
 				}
 				
 				query(".plugin-ls .stat-pill").removeClass("inactive");
 				query(".plugin-ls .stat-close").style("display", "none");
+				
+				this.opacitySlider.set("value",  1);
+				domStyle.set(this.opacityContainer, "display", "none");
 				
 				var node = _.first(query(".plugin-ls .details"));
 				if (domStyle.get(node, "display") == "block") {
@@ -1047,6 +1203,44 @@ define([
 						}
 					};
 					fx.fadeOut(params).play();
+				}
+				this.createDetailContent();
+			}
+			
+			this.setControlDependency = function(pane, category, name, group = null) {
+				if (_.isNull(group)) {
+					var el = this._interface.controls[pane][category][name];
+				} else {
+					var el = this._interface.controls[pane][category][group].controls[name];
+				}
+				if (_.has(el, "dependency")) {
+					var d = el.dependency;
+					array.forEach(_.keys(d.hide), function(type) {
+						array.forEach(d.hide[type], function(control) {
+							query("." + type + "-div." + control).style("display","none")
+						});
+					});
+					array.forEach(_.keys(d.show), function(type) {
+						array.forEach(d.show[type], function(control) {
+							query("." + type + "-div." + control).style("display","block")
+						});
+					});
+					
+					array.forEach(_.keys(d.disable), function(type) {
+						array.forEach(d.disable[type], function(control) {
+							domAttr.set(self[control + "Select"], "disabled", true);
+							query("." + type + "-div." + control).style("color","#d3d3d3")
+							query("." + type + "-div." + control + " i").style("color", "#d3d3d3");
+						});
+					});
+					array.forEach(_.keys(d.enable), function(type) {
+						array.forEach(d.enable[type], function(control) {
+							domAttr.set(self[control + "Select"], "disabled", false);
+							query("." + type + "-div." + control).style("color", "#333333");
+							query("." + type + "-div." + control + " i").style("color", "#333333");
+						});
+					});
+					
 				}
 			}
 			
