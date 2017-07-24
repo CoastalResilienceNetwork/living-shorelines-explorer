@@ -247,7 +247,9 @@ define([
 
 			this.loadLayers = function() {
 				on(this._map, "zoom-end", function(evt) {
-					self.updateMapLayers();
+					if(!_.isEmpty(this._mapLayer)) {
+						self.updateMapLayers();
+					}
 				})
 				
 				var i = 0
