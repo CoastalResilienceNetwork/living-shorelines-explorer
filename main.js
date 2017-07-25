@@ -47,7 +47,7 @@ define([
                toolbarType: "sidebar",
                hasHelp: false,
                showServiceLayersInLegend: true,
-               allowIdentifyWhenActive: true,
+               allowIdentifyWhenActive: false,
                plugin_directory: "plugins/living-shorelines-explorer",
 			   size:"custom",
                width: 425,

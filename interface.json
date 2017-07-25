@@ -174,7 +174,7 @@
 	"region": {
 		"Carteret": {
 			"layers": {
-				"main": { "type": "dynamic", "url":"http://dev.services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer", "visibleIds": [12,13], "scaleRangeIds": {"small":[12,13], "large":[11,13] } },
+				"main": { "type": "dynamic", "url":"http://dev.services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer", "scaleRangeIds": {"small":[12,13], "large":[11,13] } },
 				"feature": { "type": "feature", "url":"http://dev.services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/11" }
 			},
 			"query": { 
@@ -215,6 +215,20 @@
 						"marsh_fortified": 2,
 						"not_recommended": 0
 					}
+				},
+				"factor": {
+					"rep_we": { 
+						"dynamicId": 18,
+						"field": "RWE_SCORE"
+					},
+					"bwe": { 
+						"dynamicId": 17,
+						"field": "BOAT_SCORE"
+					},
+					"dist": { 
+						"dynamicId": 16,
+						"field": "MARSH_SCORE"
+					}
 				}
 			},
 			"extent": {
@@ -239,6 +253,7 @@
 					"show":false
 				},
 				"factors": {
+					"panetitle": "Living Shoreline Suitability Factors",
 					"display": true,
 					"controls": {
 						"show": {
@@ -295,6 +310,10 @@
 				}
 			},
 			"table": {
+				"parent": {
+					"node":"recommendations",
+					"title": "Details of Living Shoreline Suitability"
+				},
 				"header": {
 					"td": [
 						{ "name":"Factor", "width":"41%", "css":"label" },
@@ -419,7 +438,7 @@
 				}
 			},
 			"layers": {
-				"main": { "type": "dynamic", "url":"http://dev.services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer", "visibleIds": [20,21], "scaleRangeIds": { "small":[20,21], "large":[19,21] }  },
+				"main": { "type": "dynamic", "url":"http://dev.services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer", "scaleRangeIds": { "small":[20,21], "large":[19,21] }  },
 				"feature": { "type": "feature", "url":"http://dev.services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/19" }
 			},
 			"query": { 
@@ -487,6 +506,7 @@
 					"show":false
 				},
 				"factors": {
+					"panetitle": "Living Shoreline Suitability Factors",
 					"display": true,
 					"controls": {
 						"show": {
@@ -543,6 +563,10 @@
 				}
 			},
 			"table": {
+				"parent": {
+					"node":"recommendations",
+					"title": "Details of Living Shoreline Suitability"
+				},
 				"header": {
 					"td": [
 						{ "name":"Factor", "width":"41%", "css":"label" },
@@ -657,7 +681,7 @@
 		},
 		"Virginia": {
 			"layers": {
-				"main": { "type": "dynamic", "url":"http://dev.services.coastalresilience.org/arcgis/rest/services/Virginia/Living_Shoreline_Explorer/MapServer", "visibleIds": [1], "scaleRangeIds": { "small":[1], "large":[0] }  },
+				"main": { "type": "dynamic", "url":"http://dev.services.coastalresilience.org/arcgis/rest/services/Virginia/Living_Shoreline_Explorer/MapServer", "scaleRangeIds": { "small":[1], "large":[0] }  },
 				"feature": { "type": "feature", "url":"http://dev.services.coastalresilience.org/arcgis/rest/services/Virginia/Living_Shoreline_Explorer/MapServer/0" }
 			},
 			"definitionExpression": {
@@ -691,9 +715,10 @@
 			"interface": {
 				"description": {
 					"show":true,
-					"label":"Suitability for nature-based shoreline enhancement techniques is determined using living shoreline engineering guidelines."
+					"label":"Suitability for nature-based shoreline enhancement techniques is determined using living shoreline engineering guidelines. This app serves as a screening tool and does not replace a site visit/assessment."
 				},
 				"factors": {
+					"panetitle": "Marsh Vulnerability Index",
 					"display": false,
 					"controls": {
 						"show": {
@@ -745,6 +770,11 @@
 				}
 			},
 			"table": {
+				"parent": {
+					"node":"recommendations",
+					"title": "Details of Living Shoreline Suitability",
+					"height": "375px"
+				},
 				"header": {
 					"td": [
 						{ "name":"Factor", "width":"70%", "css":"label" },
@@ -767,8 +797,7 @@
 				"footer": {
 					"colspan":2,
 					"label_field": "LSEM"
-				},
-				"parent_height": "365px"
+				}
 			},
 			"tooltips": {
 				"region": {

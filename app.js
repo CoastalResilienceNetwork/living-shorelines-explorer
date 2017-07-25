@@ -174,11 +174,9 @@ define([
 			}
 			
 			this.showTool = function(){
-				if (this._region != "") {
-					this.updateInterface();
-					this.updateExtentByRegion(this._region);
-					this.setMapLayers();
-				}
+				this.updateInterface();
+				this.updateExtentByRegion(this._region);
+				this.setMapLayers();
 			} 
 
 			this.hideTool = function(){
@@ -247,7 +245,7 @@ define([
 
 			this.loadLayers = function() {
 				on(this._map, "zoom-end", function(evt) {
-					if(!_.isEmpty(this._mapLayer)) {
+					if(!_.isEmpty(self._mapLayer)) {
 						self.updateMapLayers();
 					}
 				})
@@ -259,7 +257,7 @@ define([
 						var id = "ls-layer-" + i;
 						if (self._interface.region[region].layers[layer].type == "dynamic") {
 							var mapLayer = new DynamicMapServiceLayer(self._interface.region[region].layers[layer].url, { id:id });
-							mapLayer.setVisibleLayers(self._interface.region[region].layers[layer].visibleIds);
+							mapLayer.setVisibleLayers(self._interface.region[region].layers[layer].scaleRangeIds.small);
 							mapLayer.setImageFormat("png32");
 						} else {
 							var mapLayer = new FeatureLayer(self._interface.region[region].layers[layer].url, { id:id, outFields:["*"] });
@@ -275,7 +273,8 @@ define([
 								var symbol = new esri.symbol.SimpleFillSymbol(esri.symbol.SimpleFillSymbol.STYLE_SOLID, new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new dojo.Color([0,0,0,1]),4), new dojo.Color([0,0,0,0]));
 								self._map.graphics.add(new Graphic(evt.graphic.geometry, symbol))
 								
-								var node = _.first(query(".plugin-ls .details"));
+								var ui = self._interface.region[self._region];
+								var node = _.first(query(".plugin-ls ." + ui.table.parent.node + " .details"));
 								var params = {
 									node: node,
 									duration: 800,
@@ -320,16 +319,16 @@ define([
 				this._map.addLayer(this.hoverLayer); */
 				
 				on(this._map, "click", function(evt){
-					
 					if(!_.contains(evt.target.parentElement.id.split("-"), "ls")) {
 						self._map.graphics.clear();
-						var node = _.first(query(".plugin-ls .details"));
+						var ui = self._interface.region[self._region];
+						var node = _.first(query(".plugin-ls .details." + ui.table.parent.node));
 						var params = {
 							node: node,
 							duration: 500,
 							onEnd: function(){
 								domStyle.set(node, "display", "none");
-								domStyle.set(_.first(query(".plugin-ls .details")).parentNode, "height", "auto"); 
+								domStyle.set(node.parentNode, "height", "auto"); 
 							}
 						};
 						fx.fadeOut(params).play();
@@ -338,11 +337,15 @@ define([
 			}
 			
 			this.createDetailContent = function() {
-				var table = this.detailTable;
+				var ui = this._interface.region[this._region];
+				
+				var table = _.first(query(".details." + ui.table.parent.node + " .content table"));
 				domConstruct.empty(table);
 				
+				_.first(query(".details." + ui.table.parent.node + " .header")).innerHTML = ui.table.parent.title;
+				
 				//create table header
-				var header = this._interface.region[this._region].table.header;
+				var header = ui.table.header;
 				var tr = domConstruct.create("tr", { class:"table-header" }, table);
 				array.forEach(header.td, function(td) {
 					domConstruct.create("td", {
@@ -353,7 +356,7 @@ define([
 				});
 
 				//create table rows
-				var rows = this._interface.region[this._region].table.rows;
+				var rows = ui.table.rows;
 				array.forEach(rows.tr, function(row) {
 					var tr = domConstruct.create("tr", { class:row.id }, table);
 					array.forEach(header.td, function(td) {
@@ -363,40 +366,41 @@ define([
 				});
 				
 				//create table "footer"
-				var colspan = this._interface.region[this._region].table.footer.colspan
+				var colspan = ui.table.footer.colspan
 				var tr = domConstruct.create("tr", { class:"final-rec" }, table);
 				domConstruct.create("td", {class:"category", colspan: colspan}, tr);
-				if (_.has(this._interface.region[this._region].table.footer, "score_field")){
+				if (_.has(ui.table.footer, "score_field")){
 					domConstruct.create("td", {class:"final-score"}, tr);
 				}
 			}
 			
 			this.updateDetailContent = function(data) {
-				var colors = this._interface.region[this._region].colors;
-				var labels = this._interface.region[this._region].labels;
+				var ui = this._interface.region[this._region];
+				
+				var colors = ui.colors;
+				var labels = ui.labels;
 						
-				query(".plugin-ls .details .content tr.final-rec").style("color", colors.habitat[data.habitat]);
-				_.first(query(".plugin-ls .details .content td.category")).innerHTML = labels.habitat[data.habitat].replace("<br>"," ");
-				if (_.has(this._interface.region[this._region].table.footer, "score_field")){
-					_.first(query(".plugin-ls .details .content td.final-score")).innerHTML = data.final;
+				query(".plugin-ls .details." + ui.table.parent.node + " .content tr.final-rec").style("color", colors.habitat[data.habitat]);
+				_.first(query(".plugin-ls .details." + ui.table.parent.node + " .content td.category")).innerHTML = labels.habitat[data.habitat].replace("<br>"," ");
+				if (_.has(ui.table.footer, "score_field")){
+					_.first(query(".plugin-ls .details." + ui.table.parent.node + " .content td.final-score")).innerHTML = data.final;
 				}
 				
 				array.forEach(data.data, function(d) {
-					if (query(".plugin-ls .details .content tr." + d.name + " td.value").length > 0) {
-						_.first(query(".plugin-ls .details .content tr." + d.name + " td.value")).innerHTML = labels.scores[d.value][d.name];
+					if (query(".plugin-ls .details." + ui.table.parent.node + " .content tr." + d.name + " td.value").length > 0) {
+						_.first(query(".plugin-ls .details." + ui.table.parent.node + " .content tr." + d.name + " td.value")).innerHTML = labels.scores[d.value][d.name];
 					}
-					_.first(query(".plugin-ls .details .content tr." + d.name + " td.score")).innerHTML = d.value;
+					_.first(query(".plugin-ls .details." + ui.table.parent.node + " .content tr." + d.name + " td.score")).innerHTML = d.value;
 				})
 				
-				var height = (this._interface.region[this._region].table.parent_height) ? this._interface.region[this._region].table.parent_height : "auto";
-				domStyle.set(_.first(query(".plugin-ls .details")).parentNode, "height", height); 
+				var height = (_.has(ui.table.parent, "height")) ? ui.table.parent.height : "auto";
+				domStyle.set(_.first(query(".plugin-ls .details." + ui.table.parent.node)).parentNode, "height", height); 
 				
 			}
 			
 			this.updateMapLayers = function() {
 				var scale = (this._map.getScale() > this.featureLayerScale) ? "small" : "large";
 				var visibleIds = (this.recommendationPane.open) ? this._interface.region[this._region].layers.main.scaleRangeIds[scale] : (_.has(self._data.region[self._region], "county")) ? self._data.region[self._region]["county"] : [];
-				
 				if (this._interface.region[this._region].interface.factors.controls.show.radio.length > 0) {
 					array.forEach(_.keys(this._interface.controls.factors.radio), function(rb) {
 						if (self[rb + "RadioButton"].checked && !self.recommendationPane.open) {
@@ -446,7 +450,7 @@ define([
 			this.setMapLayers = function() {
 				array.forEach(_.keys(this._mapLayers), function(key) {
 					if (key == self._region) {
-						self._mapLayers[key].main.setVisibleLayers(self._interface.region[key].layers.main.visibleIds);
+						self._mapLayers[key].main.setVisibleLayers(self._interface.region[key].layers.main.scaleRangeIds.small);
 						self._mapLayers[key].main.show();
 						self._mapLayers[key].feature.show();
 						
@@ -482,12 +486,12 @@ define([
 				var layerDefs = (!_.isUndefined(this._mapLayer.layerDefinition)) ? this._mapLayer.layerDefinition : [];
 				switch(pane) {
 					case "habitat":
-						var index = this._interface.region[this._region].definitionExpression.habitat.dynamicId;
+						var index = self._interface.region[self._region].definitionExpression.habitat.dynamicId;
 						this._featureLayer.setDefinitionExpression("");
 						break;
 						
 					case "factor":
-						var index = this._interface.region[this._region].definitionExpression.factor[type].dynamicId;
+						var index = self._interface.region[self._region].definitionExpression.factor[type].dynamicId;
 						break;
 				}
 				layerDefs[index] = null;
@@ -633,7 +637,7 @@ define([
 				this.titleGroupPane = new TitleGroup({style:"height:auto;"});
 				
 				this.recommendationPane = new TitlePane({
-					title: "<i class='fa tg-toggle-icon'></i>&nbsp;Living Shoreline Suitability Types",
+					title: "<i class='fa tg-toggle-icon'></i>&nbsp;<span class='recommendations pane-title'>Living Shoreline Suitability Types</span>",
 					style:"width:100%;",
 					open:true
 				});
@@ -730,7 +734,7 @@ define([
 				});
 				
 				var detailDiv = domConstruct.create("div", {
-					class: "details"
+					class: "details recommendations"
 				},  self.statsControlPane.containerNode);
 				
 				domConstruct.create("div", {
@@ -752,7 +756,7 @@ define([
 						},
 						onEnd: function(){
 							domStyle.set(node, "display", "none");
-							domStyle.set(_.first(query(".plugin-ls .details")).parentNode, "height", "auto"); 
+							domStyle.set(_.first(query(".plugin-ls .recommendations .details")).parentNode, "height", "auto"); 
 						}
 					};
 					fx.fadeOut(params).play();
@@ -762,18 +766,14 @@ define([
 					class: "inner",
 				},  detailDiv);
 				
-				domConstruct.create("div", {
-					class: "chart"
-				},  detailInner);
-				
 				var content = domConstruct.create("div", {
 					class: "content"
 				},  detailInner);
 				
-				this.detailTable = domConstruct.create("table", {}, content);
+				domConstruct.create("table", {}, content);
 				
 				this.factorPane = new TitlePane({
-					title: "<i class='fa fa-plus tg-toggle-icon'></i>&nbsp;Living Shoreline Suitability Factors",
+					title: "<i class='fa fa-plus tg-toggle-icon'></i>&nbsp;<span class='factors pane-title'>Living Shoreline Suitability Factors</span>",
 					style:"width:100%;",
 					open:false
 				});
@@ -1008,6 +1008,45 @@ define([
 					})
 				}
 				
+				var detailDiv = domConstruct.create("div", {
+					class: "details factors"
+				},  self.factorPane.containerNode);
+				
+				domConstruct.create("div", {
+					class: "header",
+					innerHTML: "Details of Marsh Vulnerability Index"
+				},  detailDiv);
+				
+				var closeDiv = domConstruct.create("div", {
+					class: "icon-cancel close"
+				},  detailDiv);
+				
+				on(closeDiv, "click", function(evt) {
+					var node = this.parentNode;
+					var params = {
+						node: node,
+						duration: 500,
+						onBegin: function() {
+							self._map.graphics.clear();
+						},
+						onEnd: function(){
+							domStyle.set(node, "display", "none");
+							domStyle.set(_.first(query(".plugin-ls .factors .details")).parentNode, "height", "auto"); 
+						}
+					};
+					fx.fadeOut(params).play();
+				})
+				
+				var detailInner = domConstruct.create("div", {
+					class: "inner",
+				},  detailDiv);
+				
+				var content = domConstruct.create("div", {
+					class: "content"
+				},  detailInner);
+				
+				domConstruct.create("table", {}, content);
+				
 				this.layersPane.addChild(this.titleGroupPane);
 				this.titleGroupPane.startup();
 
@@ -1144,6 +1183,10 @@ define([
 				var display = (ui.factors.display) ? "block" : "none";
 				query(".stats.factors").style("display", display);
 				
+				if (ui.factors.panetitle) {
+					_.first(query(".factors.pane-title")).innerHTML = ui.factors.panetitle;
+				}
+				
 				array.forEach(_.keys(ui.factors.controls.hide), function(type) {
 					array.forEach(ui.factors.controls.hide[type], function(control) {
 						query("." + type + "-div." + control).style("display","none")
@@ -1192,20 +1235,22 @@ define([
 				this.opacitySlider.set("value",  1);
 				domStyle.set(this.opacityContainer, "display", "none");
 				
-				var node = _.first(query(".plugin-ls .details"));
-				if (domStyle.get(node, "display") == "block") {
-					var params = {
-						node: node,
-						duration: 500,
-						onBegin: function() {
-							self._map.graphics.clear();
-						},
-						onEnd: function(){
-							domStyle.set(node, "display", "none");
-						}
-					};
-					fx.fadeOut(params).play();
-				}
+				var nodes = query(".plugin-ls .details");
+				array.forEach(nodes, function(node) {
+					if (domStyle.get(node, "display") == "block") {
+						var params = {
+							node: node,
+							duration: 500,
+							onBegin: function() {
+								self._map.graphics.clear();
+							},
+							onEnd: function(){
+								domStyle.set(node, "display", "none");
+							}
+						};
+						fx.fadeOut(params).play();
+					}
+				})
 				this.createDetailContent();
 			}
 			
