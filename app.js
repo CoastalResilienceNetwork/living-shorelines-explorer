@@ -146,8 +146,8 @@ define([
 				
 				var plugin = this;
 				on(this.infoGraphicButton, "click", function(c){
-					var popup = JSON.parse(domAttr.get(this, "data-popup"));
-					var url = domAttr.get(this, "data-url");
+					var popup = (_.has(self._interface.region[self._region].interface, "infoGraphic") && _.has(self._interface.region[self._region].interface.infoGraphic, "popup")) ? self._interface.region[self._region].interface.infoGraphic.popup : JSON.parse(domAttr.get(this, "data-popup"));
+					var url = (_.has(self._interface.region[self._region].interface, "infoGraphic") && _.has(self._interface.region[self._region].interface.infoGraphic, "url")) ? self._interface.region[self._region].interface.infoGraphic.url : domAttr.get(this, "data-url");
 					if (popup) {
 						var html = self._interface.infoGraphic.html.replace("PLUGIN-DIRECTORY", plugin._plugin_directory);;
 						TINY.box.show({
@@ -274,7 +274,7 @@ define([
 								self._map.graphics.add(new Graphic(evt.graphic.geometry, symbol))
 								
 								var ui = self._interface.region[self._region];
-								var node = _.first(query(".plugin-ls ." + ui.table.parent.node + " .details"));
+								var node = _.first(query(".plugin-ls ." + ui.table.node + " .details"));
 								var params = {
 									node: node,
 									duration: 800,
@@ -286,12 +286,19 @@ define([
 								
 								var attributes = evt.graphic.attributes;
 								var data = {};
-								data.habitat = (!_.isUndefined(self._interface.region[self._region].key)) ? self._interface.region[self._region].key.habitat[attributes[self._interface.region[self._region].table.footer.label_field]] : attributes[self._interface.region[self._region].table.footer.label_field]
-								if (_.has(self._interface.region[self._region].table.footer, "score_field")){
-									data.final = attributes[self._interface.region[self._region].table.footer.score_field];
+								data.habitat = (!_.isUndefined(self._interface.region[self._region].key)) ? self._interface.region[self._region].key.habitat[attributes[self._interface.region[self._region].table.summary.category.habitat.label_field]] : attributes[self._interface.region[self._region].table.summary.category.habitat.label_field]
+								
+								if (_.has(self._interface.region[self._region].table.summary.category.habitat, "score_field")){
+									data.final = attributes[self._interface.region[self._region].table.summary.category.habitat.score_field];
 								}
-								data.data = array.map(self._interface.region[self._region].table.rows.tr, function(row) {
-									return { "name": row.id, "value": attributes[row.field] }
+								
+								data.data = []
+								array.forEach(self._interface.region[self._region].table.factors.rows.tr, function(row) {
+									data.data.push({ "name": row.id, "value": attributes[row.field] });
+									
+									if (_.has(self._interface.region[self._region].table.summary.category, "factors")) {
+										data.factors = attributes[self._interface.region[self._region].table.summary.category.factors.label_field];
+									}
 								})
 								
 								self.updateDetailContent(data);
@@ -322,7 +329,7 @@ define([
 					if(!_.contains(evt.target.parentElement.id.split("-"), "ls")) {
 						self._map.graphics.clear();
 						var ui = self._interface.region[self._region];
-						var node = _.first(query(".plugin-ls .details." + ui.table.parent.node));
+						var node = _.first(query(".plugin-ls .details." + ui.table.node));
 						var params = {
 							node: node,
 							duration: 500,
@@ -338,17 +345,29 @@ define([
 			
 			this.createDetailContent = function() {
 				var ui = this._interface.region[this._region];
+				_.first(query(".details." + ui.table.node  + " .header")).innerHTML = ui.table.title;
 				
-				var table = _.first(query(".details." + ui.table.parent.node + " .content table"));
-				domConstruct.empty(table);
+				var container = _.first(query(".details." + ui.table.node + " .content"));
 				
-				_.first(query(".details." + ui.table.parent.node + " .header")).innerHTML = ui.table.parent.title;
+				var factorsTable = _.first(query(".details." + ui.table.node  + " .content .factors-table"))
+				if(_.isUndefined(factorsTable)) {
+					var factorsTable = domConstruct.create("table", { className:"factors-table" }, container);
+				}
+				domConstruct.empty(factorsTable);
 				
 				//create table header
-				var header = ui.table.header;
-				var tr = domConstruct.create("tr", { class:"table-header" }, table);
+				var header = ui.table.factors.header;
+				if (_.has(header,"title")) {
+					var tr = domConstruct.create("tr", { class:"table-header"}, factorsTable);
+					domConstruct.create("td", {	
+						class:"table-header-title",
+						innerHTML: header.title,
+						colspan: header.td.length
+					}, tr)
+				}
+				var tr = domConstruct.create("tr", { class:"table-header" }, factorsTable);
 				array.forEach(header.td, function(td) {
-					domConstruct.create("td", {
+					domConstruct.create("td", {	
 						class:"table-header-cell",
 						innerHTML: td.name,
 						style:"width:" + td.width
@@ -356,45 +375,87 @@ define([
 				});
 
 				//create table rows
-				var rows = ui.table.rows;
+				var rows = ui.table.factors.rows;
 				array.forEach(rows.tr, function(row) {
-					var tr = domConstruct.create("tr", { class:row.id }, table);
+					var tr = domConstruct.create("tr", { class:row.id }, factorsTable);
 					array.forEach(header.td, function(td) {
 						var label = (td.css == "label") ? row.label : "";
 						domConstruct.create("td", { class:td.css, innerHTML:label }, tr);
 					})
 				});
 				
-				//create table "footer"
-				var colspan = ui.table.footer.colspan
-				var tr = domConstruct.create("tr", { class:"final-rec" }, table);
-				domConstruct.create("td", {class:"category", colspan: colspan}, tr);
-				if (_.has(ui.table.footer, "score_field")){
-					domConstruct.create("td", {class:"final-score"}, tr);
+				var summaryTable = _.first(query(".details." + ui.table.node  + " .content .summary-table"))
+				if(_.isUndefined(summaryTable)) {
+					var summaryTable = domConstruct.create("table", { className:"summary-table" }, container);
 				}
+				domConstruct.empty(summaryTable);
+				domConstruct.place(summaryTable, factorsTable, ui.table.summary.place);
+				var borderBottom = (ui.table.summary.place == "before") ? "1px solid #cccccc" : "none";
+				domStyle.set(summaryTable, "border-bottom", borderBottom);
+				
+				var colgroup = domConstruct.create("colgroup", {}, summaryTable);
+				cols = 20;
+				width = 100/cols;
+				while (cols > 0) {
+					domConstruct.create("col", { width:(width)+"%" }, colgroup);
+					cols -= 1
+				}
+				
+				var keys = _.keys(ui.table.summary.category);
+				array.forEach(keys, function(k,i) { 
+					var paddingBottom = (i == (keys.length-1) && ui.table.summary.place == "before") ? "15px" : "0px";
+					
+					var tr = domConstruct.create("tr", { class:"final-rec " + k }, summaryTable);
+					
+					if (_.has(ui.table.summary.category[k], "label")){
+						domConstruct.create("td", {class:"summary-label", colspan: ui.table.summary.category[k].colspan.label, style:"padding-bottom:" + paddingBottom}, tr);
+					}
+					
+					domConstruct.create("td", { class:"category", colspan: ui.table.summary.category[k].colspan.category, style:"padding-bottom:" + paddingBottom }, tr);
+					
+					if (_.has(ui.table.summary.category[k], "score_field")){
+						domConstruct.create("td", {class:"final-score", colspan: ui.table.summary.category[k].colspan.score, style:"padding-bottom:" + paddingBottom }, tr);
+					}
+				})
+				
 			}
 			
 			this.updateDetailContent = function(data) {
+				console.log(data);
 				var ui = this._interface.region[this._region];
+				var parentNode = ui.table.node;
 				
-				var colors = ui.colors;
+				var color = ui.colors.habitat[data.habitat];
 				var labels = ui.labels;
 						
-				query(".plugin-ls .details." + ui.table.parent.node + " .content tr.final-rec").style("color", colors.habitat[data.habitat]);
-				_.first(query(".plugin-ls .details." + ui.table.parent.node + " .content td.category")).innerHTML = labels.habitat[data.habitat].replace("<br>"," ");
-				if (_.has(ui.table.footer, "score_field")){
-					_.first(query(".plugin-ls .details." + ui.table.parent.node + " .content td.final-score")).innerHTML = data.final;
-				}
+				query(".plugin-ls .details." + parentNode + " .content .summary-table tr.habitat td.category").style("color", color);
+				//_.first(query(".plugin-ls .details." + parentNode + " .content td.category")).innerHTML = labels.habitat[data.habitat].replace("<br>"," ");
 				
 				array.forEach(data.data, function(d) {
-					if (query(".plugin-ls .details." + ui.table.parent.node + " .content tr." + d.name + " td.value").length > 0) {
-						_.first(query(".plugin-ls .details." + ui.table.parent.node + " .content tr." + d.name + " td.value")).innerHTML = labels.scores[d.value][d.name];
+					if (query(".plugin-ls .details." + parentNode + " .content tr." + d.name + " td.value").length > 0) {
+						_.first(query(".plugin-ls .details." + parentNode + " .content tr." + d.name + " td.value")).innerHTML = labels.scores[d.value][d.name];
 					}
-					_.first(query(".plugin-ls .details." + ui.table.parent.node + " .content tr." + d.name + " td.score")).innerHTML = d.value;
+					_.first(query(".plugin-ls .details." + parentNode + " .content tr." + d.name + " td.score")).innerHTML = d.value;
 				})
 				
-				var height = (_.has(ui.table.parent, "height")) ? ui.table.parent.height : "auto";
-				domStyle.set(_.first(query(".plugin-ls .details." + ui.table.parent.node)).parentNode, "height", height); 
+				array.forEach(_.keys(ui.table.summary.category), function(k) { 
+					var node = ui.table.summary.category[k];
+					if (_.has(node, "label")){
+						_.first(query(".plugin-ls .details." + parentNode + " .content tr." + k + " td.summary-label")).innerHTML = node.label;
+					}
+					
+					var el = _.first(query(".plugin-ls .details." + parentNode + " .content tr." + k + " td.category"));
+					var value = (_.has(labels, node.layer) && _.has(labels[node.layer], data[node.layer])) ? labels[node.layer][data[node.layer]].replace("<br>"," ") : data[node.layer] 
+					el.innerHTML = value;
+					
+					if (_.has(node, "score_field")){
+						query(".plugin-ls .details." + parentNode + " .content td.final-score").style("color", color);
+						_.first(query(".plugin-ls .details." + parentNode + " .content td.final-score")).innerHTML = data.final;
+					}
+				})
+				
+				var height = (_.has(ui.table, "height")) ? ui.table.height : "auto";
+				domStyle.set(_.first(query(".plugin-ls .details." + parentNode)).parentNode, "height", height);
 				
 			}
 			
@@ -436,14 +497,13 @@ define([
 					});
 				}
 				
-				if (this._interface.region[this._region].interface.other.controls.show.check.length > 0) {
-					array.forEach(_.keys(this._interface.controls.check), function(cb) {
+				if (_.has(this._interface.region[this._region].interface, "other") && this._interface.region[this._region].interface.other.controls.show.check.length > 0) {
+					array.forEach(this._interface.region[this._region].interface.other.controls.show.check, function(cb) {
 						if (self[cb + "CheckBox"].checked) {
 							visibleIds = _.union(visibleIds, self._data.region[self._region][cb]);
 						}
 					});
 				}
-				
 				this._mapLayer.setVisibleLayers(visibleIds);
 			}
 			
@@ -587,7 +647,7 @@ define([
 				
 				var regionSelectDiv = domConstruct.create("div", { 
 					className: "styled-select",
-					style:"width:175px;display:inline-block;" 
+					style:"width:140px;display:inline-block;" 
 				}, regionTd);
 				this.regionSelect = dojo.create("select", { name: "regionType"}, regionSelectDiv);
 				array.forEach(_.keys(this._interface.region), function(key) {
@@ -602,7 +662,7 @@ define([
 				this.regionSelect.value = _.first(this.regionSelect.options).value;
 				this._region = this.regionSelect.value;
 				
-				this.downloadReport = domConstruct.create("div", { className:"downloadButton ls-report", innerHTML:'<i class="fa fa-file-pdf-o downloadIcon"></i><span class="downloadText">County Summary</span>' }, regionTd);
+				this.downloadReport = domConstruct.create("div", { className:"downloadButton ls-report", innerHTML:'<i class="fa fa-file-pdf-o downloadIcon"></i><span class="downloadText">Summary</span>' }, regionTd);
 				on(this.downloadReport,"mouseover", function(){
 					if (self._region && self._region != "") {
 						domStyle.set(this, "background", "#0096d6");
@@ -616,6 +676,25 @@ define([
 				on(this.downloadReport,"click", function(){
 					 if (self._region && self._region != "") {
 						var url = self._interface.region[self._region].download.report;
+						url = url.replace("HOSTNAME-", window.location.href);
+						window.open(url, "_blank");
+					 }
+				});
+				
+				this.downloadMethods = domConstruct.create("div", { className:"downloadButton ls-methods", innerHTML:'<i class="fa fa-file-pdf-o downloadIcon"></i><span class="downloadText">Methods</span>' }, regionTd);
+				on(this.downloadMethods,"mouseover", function(){
+					if (self._region && self._region != "") {
+						 domStyle.set(this, "background", "#0096d6");
+					}
+				});
+				on(this.downloadMethods,"mouseout", function(){
+					if (self._region && self._region != "") {
+						 domStyle.set(this, "background", "#2B2E3B");
+					}
+				});
+				on(this.downloadMethods,"click", function(){
+					 if (self._region && self._region != "") {
+						var url = self._interface.region[self._region].download.methods;
 						url = url.replace("HOSTNAME-", window.location.href);
 						window.open(url, "_blank");
 					 }
@@ -770,7 +849,17 @@ define([
 					class: "content"
 				},  detailInner);
 				
-				domConstruct.create("table", {}, content);
+				/* domConstruct.create("div", {
+					class: "before"
+				},  content);
+				
+				omConstruct.create("div", {
+					class: "middle"
+				},  content);
+				
+				omConstruct.create("div", {
+					class: "after"
+				},  content); */
 				
 				this.factorPane = new TitlePane({
 					title: "<i class='fa fa-plus tg-toggle-icon'></i>&nbsp;<span class='factors pane-title'>Living Shoreline Suitability Factors</span>",
