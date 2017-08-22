@@ -5,100 +5,181 @@
 		"popup": true,
 		"width":600,
 		"height":400, 
+		"html": "<div class='infoGraphic-content'>&quot;Living Shoreline&quot; means using natural techniques to protect your shoreline from erosion.  A Living Shoreline enhances near-shore habitat while making your shoreline safer and more natural.*<br><img src='PLUGIN-DIRECTORY/LS_Infographic.jpg'><br>*<span class='infoGraphic-subContent'>This tool predicts the most appropriate shoreline stabilization strategy for a given shoreline based on wave energy conditions.  Additional local factors like nearshore land use, bathymetry, topography, and salinity should also be considered. Consult with local regulatory experts/engineers to determine site-specific design options and permitting requirements.</span></div>",
 		"url":""
 	},
-	"tooltips": {
-		"region": "Geographic areas where living shoreline recommendations have been completed."
-	},
 	"controls": {
-		"habitat": {
-			"marsh": { "label":"Marsh <br>(alone or with oyster)", "value": 4 },
-			"marsh_fortified": { "label":"Marsh <br>(fortified with rock sill)", "value": 2 },
-			"not_recommended": { "label":"Living Shoreline <br>(not recommended)", "value": 0 }
+		"recommendation": {
+			"pills": {
+				"marsh": { "label":"", "value": 2 },
+				"marsh_fortified": { "label":"", "value": 1 },
+				"not_recommended": { "label":"", "value": 0 }
+			}
 		},
 		"factors": {
-			"10": { "label": { "rep_we":"<= 300 J/m", "bwe":">200 m Rec & <br>>500 m Comm", "dist":"<= 100 m"} },
-			"5": { "label": { "rep_we":"300-700 J/m", "bwe":"100-200 m Rec & <br>200-500 m Comm"} },
-			"0": { "label": { "rep_we":"> 700 J/m", "bwe":"<100 m Rec & <br><200 m Comm", "dist":"> 100 m"} }
-		},
-		"radio": {
-			"rep_we": { "type": "radio", "group":"factors", "name":"rep_we", "value":"rep_we", "label":"Representative Wave Energy (RWE)", "checked": true },
-			"bwe": { "type": "radio", "group":"factors", "name":"bwe", "value":"bwe", "label":"Boat Wake Energy: Distance (m) from Channels", "checked": false },
-			"dist": { "type": "radio", "group":"factors", "name":"dist", "value":"dist", "label":"Distance (m) to Natural Marsh Shoreline", "checked": false }
-		},
-		"check": {
-			"projects": { "type": "check", "name":"projects", "value":"projects", "label":"Existing Projects", "checked": false },
-			"marsh": { "type": "check", "name":"marsh", "value":"marsh", "label":"Natural Marsh", "checked": false },
-			"recreational": { "type": "check", "name":"recreational", "value":"recreational", "label":"Recreational Channel", "checked": false },
-			"commercial": { "type": "check", "name":"commercial", "value":"commercial", "label":"Commercial Channel", "checked": false },
-			"rel_we": { "type": "check", "name":"rel_we", "value":"rel_we", "label":"Relative Wave Energy", "checked": false }
-		}
-	},
-	"chart": {
-		"domain": [0,10],
-		"tickValues": [5,10],
-		"fields": {
-			"factors": {
-				"rep_we": "RWE_score",
-				"bwe": "boat_score",
-				"dist": "Marsh_score"
+			"pills": {
+				"10": { "label": { "rep_we":"≤ 300 J/m", "bwe":">200 m Rec <br>>500 m Comm", "dist":"≤ 100 m"} },
+				"5": { "label": { "rep_we":"300-700 J/m", "bwe":"100-200 m Rec <br>200-500 m Comm"} },
+				"0": { "label": { "rep_we":"> 700 J/m", "bwe":"<100 m Rec <br><200 m Comm", "dist":"> 100 m"} }
 			},
-			"final": "Final_Scor"
-		},
-		"labels": {
-			"factors": {
-				"rep_we": "Rep. Wave Energy (RWE)",
-				"bwe": "Boat Wake Energy (BWE)",
-				"dist": "Distance to Marsh (DTM)"
+			"radio": {
+				"rep_we": {
+					"group": "factors",
+					"name": "rep_we",
+					"value": "rep_we",
+					"label": "Wind Wave Energy (WWE)",
+					"checked": true
+				},
+				"bwe": {
+					"group": "factors",
+					"name": "bwe",
+					"value": "bwe",
+					"label": "Boat Wake Energy: Distance (m) from Channels",
+					"checked": false
+				},
+				"dist": {
+					"group": "factors",
+					"name": "dist",
+					"value": "dist",
+					"label": "Distance (m) to Natural Marsh Shoreline",
+					"checked": false
+				}
 			},
-			"scores": {
-				"10": { "rep_we":"<= 300", "bwe":">200 Rec >500 Com", "dist":"<= 100" },
-				"5": {  "rep_we":"300-700", "bwe":"100-200 Rec 200-500 Com" },
-				"0": { "rep_we":"> 700", "bwe":"<100 Rec <200 Com", "dist":"> 100" }
+			"togglebutton": {
+				"vulnerability": {
+					"controls": {
+						"mvi": {
+							"group": "vulnerability",
+							"name": "mvi",
+							"value": "mvi",
+							"label": "Overall Vulnerability",
+							"checked": true,
+							"dependency": {
+								"show": {
+									"togglebutton":[]
+								},
+								"hide": {
+									"togglebutton":["climate","human"]
+								},
+								"disable": {
+									"select":["factors"]
+								}
+							}
+						},
+						"individual": {
+							"group": "vulnerability",
+							"name": "individual",
+							"value": "individual",
+							"label": "Individual Variables",
+							"checked": false,
+							"dependency": {
+								"show": {
+									"select":[]
+								},
+								"hide": {
+									"togglebutton":["climate","human"]
+								},
+								"enable": {
+									"select":["factors"]
+								}
+							}
+						}
+					},
+					"label": "Show the Index Model or Variables:",
+					"show": true
+				},
+				"climate": {
+					"controls": {
+						"current": {
+							"group": "climate",
+							"name": "current",
+							"value": "current",
+							"label": "Current",
+							"checked": true
+						},
+						"moderate": {
+							"group": "climate",
+							"name": "moderate",
+							"value": "moderate",
+							"label": "Moderate",
+							"checked": false
+						},
+						"high": {
+							"group": "climate",
+							"name": "high",
+							"value": "high",
+							"label": "High",
+							"checked": false
+						}
+					},
+					"label": "Select a climate-induced change scenario:",
+					"show": false
+				},
+				"human": {
+					"controls": {
+						"current": {
+							"group": "human",
+							"name": "current",
+							"value": "current",
+							"label": "Current",
+							"checked": true
+						},
+						"moderate": {
+							"group": "human",
+							"name": "moderate",
+							"value": "moderate",
+							"label": "Moderate",
+							"checked": false
+						},
+						"high": {
+							"group": "human",
+							"name": "high",
+							"value": "high",
+							"label": "High",
+							"checked": false
+						}
+					},
+					"label": "Select a human-induced change scenario:",
+					"show": false
+				}
 			},
-			"habitat": {
-				"marsh": "Marsh (alone or with oyster)", 
-				"marsh_fortified": "Marsh (fortified with rock sill)", 
-				"not_recommended": "Living Shoreline (not recommended)"
+			"select": {
+				"factors": {
+					"options": [
+						{ "name":"Wave Exposure", "value":"wave" },
+						{ "name":"Storm Surge", "value":"storm" },
+						{ "name":"Sea Level Rise", "value":"slr" },
+						{ "name":"Boat Activity", "value":"boat" },
+						{ "name":"Marsh Buffer Width", "value":"marsh_width" },
+						{ "name":"Marsh Vegetation Height", "value":"marsh_veg" },
+						{ "name":"Marsh Elevation", "value":"marsh_elev" },
+						{ "name":"Marsh Slope", "value":"marsh_slope" }
+					],
+					"label": "Select a Variable:",
+					"show": false,
+					"disabled": true
+				}
 			}
 		},
-		"colors": { 
-			"scores": {
-				"0":"#74a9cf", 
-				"5":"#0570b0", 
-				"10":"#023858"
-			},
-			"habitat": {
-				"marsh":"#43B39D", 
-				"marsh_fortified":"#FECB60", 
-				"not_recommended":"#FF6436"
-			}
-		},
-		"data": [
-			{ "axis": "RWE", "value": 0, "class": "rep_we" },
-			{ "axis": "BWE", "value": 5, "class": "bwe" }, 
-			{ "axis": "DTM", "value": 10, "class": "dist" }
-		],
-		"position": {
-			"width": 280,
-			"height": 75,
-			"margin": {
-				"top": 0,
-				"right":10,
-				"bottom":15,
-				"left":40
+		"other": {
+			"check": {
+				"projects": { "name":"projects", "value":"projects", "label":"Existing Projects", "checked": false },
+				"marsh": { "name":"marsh", "value":"marsh", "label":"Natural Marsh", "checked": false },
+				"recreational": { "name":"recreational", "value":"recreational", "label":"Recreational & Local Use Channel", "checked": false },
+				"commercial": { "name":"commercial", "value":"commercial", "label":"Commercial Shipping Channel", "checked": false },
+				"rel_we": { "name":"rel_we", "value":"rel_we", "label":"Relative Wave Energy", "checked": false }
 			}
 		}
 	},
 	"region": {
 		"Carteret": {
 			"layers": {
-				"main": { "type": "dynamic", "url":"http://dev.services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer", "visibleIds": [12] },
-				"feature": { "type": "feature", "url":"http://dev.services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/11" }
+				"main": { "type": "dynamic", "url":"http://services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer", "scaleRangeIds": {"small":[12,13], "large":[11,13] } },
+				"feature": { "type": "feature", "url":"http://services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/11" }
 			},
 			"query": { 
 				"habitat": {
-					"url": "http://dev.services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/12",
+					"url": "http://services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/12",
 					"outFields": ["INDEX","TOTAL_MILES"],
 					"keyField":"INDEX",
 					"valueField":"TOTAL_MILES",
@@ -106,19 +187,19 @@
 				}, 
 				"factors": {
 					"rep_we": { 
-						"url": "http://dev.services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/10",
+						"url": "http://services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/10",
 						"outFields": ["RWE_SCORE","Shape_Area"],
 						"keyField":"RWE_SCORE",
 						"valueField":"Shape_Area"
 					},
 					"bwe": {
-						"url": "http://dev.services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/9",
+						"url": "http://services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/9",
 						"outFields": ["BOAT_SCORE","Shape_Area"],
 						"keyField":"BOAT_SCORE",
 						"valueField":"Shape_Area"
 					},
 					"dist": {
-						"url": "http://dev.services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/8",
+						"url": "http://services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/8",
 						"outFields": ["MARSH_SCORE","Shape_Area"],
 						"keyField":"MARSH_SCORE",
 						"valueField":"Shape_Area"
@@ -128,7 +209,12 @@
 			"definitionExpression": {
 				"habitat": {
 					"dynamicId": 12,
-					"field": "INDEX"
+					"field": "INDEX",
+					"values": {
+						"marsh": 4,
+						"marsh_fortified": 2,
+						"not_recommended": 0
+					}
 				},
 				"factor": {
 					"rep_we": { 
@@ -145,56 +231,242 @@
 					}
 				}
 			},
-			"tooltips": {
-				"region": "Geographic areas where climate change/sea level rise vulnerability studies have been conducted."
-			},
 			"extent": {
-				"xmin":-8599528.77855,
-				"ymin":4104880.45566,
-				"xmax":-8415688.77855,
-				"ymax":4151765.87399,
-				"spatialReference": {
-					"wkid": 102100,
-					"latestWkid": 3857
+				"xmin":-8590277.0402000006,
+				"ymin":4107096.9270000011,
+				"xmax":-8462401.4778000005,
+				"ymax":4191292.5922000012,
+				"spatialReference":{
+					"wkid":102100,
+					"latestWkid":3857
 				}
 			},
-			"controls": {
-				"habitat": {},
-				"radio": {},
-				"check": {}
+			"key": {
+				"habitat": { 
+					"0":"not_recommended",
+					"2":"marsh_fortified",
+					"4":"marsh" 
+				}
+			},
+			"interface": {
+				"description": {
+					"show": true,
+					"label": "If your shoreline is currently experiencing erosion, or you have a bulkhead that is failing and in need of replacement, this tool can help you decide how to best utilize a natural approach for shoreline stabilization."
+				},
+				"factors": {
+					"panetitle": "Living Shoreline Suitability Factors",
+					"display": true,
+					"controls": {
+						"show": {
+							"select": [],
+							"togglebutton": [],
+							"radio": ["rep_we", "bwe", "dist"]
+						},
+						"hide": {
+							"select": ["factors"],
+							"togglebutton": ["vulnerability", "climate", "human"],
+							"radio": []
+						}
+					}
+				},
+				"other": {
+					"display": true,
+					"controls": {
+						"show": {
+							"check": ["projects","marsh","recreational","commercial","rel_we"]
+						},
+						"hide": {
+							"check": []
+						}
+					}
+				}
+			},
+			"colors": { 
+				"scores": {
+					"0":"#5f025b",
+					"5":"#BA83CD", 
+					"10":"#b9bee6"
+				},
+				"habitat": {
+					"marsh":"#43B39D", 
+					"marsh_fortified":"#FECB60", 
+					"not_recommended":"#FF6436"
+				}
+			},
+			"labels": {
+				"factors": {
+					"rep_we": "Wind Wave Energy (WWE)",
+					"bwe": "Boat Wake Energy (BWE)",
+					"dist": "Distance to Marsh (DTM)"
+				},
+				"scores": {
+					"10": { "rep_we":"≤ 300", "bwe":">200 Rec >500 Com", "dist":"≤ 100" },
+					"5": {  "rep_we":"300-700", "bwe":"100-200 Rec 200-500 Com" },
+					"0": { "rep_we":"> 700", "bwe":"<100 Rec <200 Com", "dist":"> 100" }
+				},
+				"habitat": {
+					"marsh": "Marsh plants<br>alone or with oyster reef", 
+					"marsh_fortified": "Hybrid living shoreline<br>(including marsh-sills)", 
+					"not_recommended": "Not recommended<br>for living shoreline"
+				}
+			},
+			"table": {
+				"node":"recommendations",
+				"title": "Details of Living Shoreline Suitability",
+				"summary": {
+					"place": "after",
+					"category": {
+						"habitat": { "label_field": "INDEX", "score_field": "INDEX", "layer": "habitat", "colspan": { "category":17, "score":3 } }
+					}
+				},
+				"factors": {
+					"cols":3,
+					"header": {
+						"td": [
+							{ "name":"Factor", "width":"41%", "css":"label" },
+							{ "name":"Criteria", "width":"43%", "css":"value" },
+							{ "name":"Score", "width":"15%", "css":"score" }
+						]
+					},
+					"rows": {
+						"tr": [
+							{ "id":"rep_we", "label":"Wind Wave Energy", "field":"RWE_score" },
+							{ "id":"bwe", "label":"Boat Wake Energy", "field":"boat_score" },
+							{ "id":"dist", "label":"Distance to Marsh", "field":"Marsh_score" }
+						]
+					}
+				}
+			},
+			"tooltips": {
+				"region": {
+					"title": "Choose a County",
+					"text":"Geographic areas where living shoreline recommendations have been completed."
+				},
+				"marsh": {
+					"title": "Marsh plants alone or with oyster reef",
+					"text": "<div class='habitat-info-img marsh'></div>Wetland vegetation absorbs wave energy and helps to hold soil in place.  On many low wave energy shorelines, vegetation can effectively protect against erosion.  In areas that are conducive to oysters, a fringing oyster reef can provide further protection against waves and increase habitat complexity.  This living shoreline type is recommended for locations with both low wave energy AND nearby marsh."
+				},
+				"marsh_fortified": {
+					"title": "Hybrid living shoreline (including marsh-sills)",
+					"text": "<div class='habitat-info-img hybrid'></div>On shorelines with moderate wave energy, vegetation and oysters alone may not be enough to curb shoreline erosion. In these settings, the addition of structural elements like natural fiber logs, bagged oyster shell, rock, or  wooden sills parallel to shore provides an initial wave break.  This hybrid living shoreline type is recommended where wave energy is moderate and/or natural marsh does not occur within 100 meters of the proposed site." 
+				},
+				"not_recommended": {
+					"title": "Not recommended for living shoreline",
+					"text": "<div class='habitat-info-img not_recommended'></div>High wave energy shorelines do not typically support natural fringing saltmarshes.  However, it may still be possible to incorporate natural habitat into alternative designs in conjunction with breakwaters, riprap or bulkheads."
+				},
+				"rep_we":{
+					"title": "Representative Wind Wave Energy",
+					"text": "NOAA’s <a href='https://products.coastalscience.noaa.gov/wemo/' target='_blank'>Wave Exposure Model (WEMo)</a> was run on a grid of points spaced at 50 m intervals and extending 200 m offshore across the entire study region. The model was run using high-tide water levels and the top 20% of hourly wind data from Cape Lookout (NDBC station CLKN7) from the period 2012-2015.  The threshold WEMo values used to deterimine site-specific wind-wave energy scores were based upon previous analysis of WEMo values along stable natural marsh shorelines, oyster fringed shorelines and sill based living shorelines."
+				},
+				"rep_we_10":{
+					"title": "≤ 300 J/m (Score 10)",
+					"text": "Previous analysis of representative wave energy (RWE), or average wave energy experienced at a site, along natural marsh shorelines in the study region determined that the width of natural shoreline marshes decreases dramatically in regions where RWE is > 300 J/m (Currin et al., 2017)."
+				},
+				"rep_we_5":{
+					"title": "RWE 300 - 700 J/m (Score 5)",
+					"text": "Scientific study of sill-based living shoreline techniques determined that these approaches are an effective means of shoreline stabilization on shorelines with representative wave energy (RWE), or average wave energy experienced at a site, values as high as 700."
+				},
+				"rep_we_0":{
+					"title": "> 700 J/m (Score 0)",
+					"text": "In these locations, average wind wave energy is high enough that the use of living shoreline techniques as described here is not recommended."
+				},
+				"bwe":{
+					"title": "Boat Wake Energy (BWE)",
+					"text": "The impact of boat wakes on shorelines was weighted as a function of the distance of each shoreline point from marked navigation channels. We consider two primary types of channels in the study region:<br><br>1) Commercial Shipping channels, described here as those channels that are frequented by large commercial shipping vessels (examples include the IntraCoastal Waterway and Port entrances); and, <br>2) Recreational and Local Use channels  which we define as those channels that are too small to accommodate large shipping  vessels.<br><br>Based on previous scientific studies of boat wake impacts on shorelines, we define different distance criteria for commercial and recreational channels. Each shoreline point was scored on proximity to the nearest recreational channel and proximity to the nearest commercial channel and the score the indicated the highest wave energy was used as the boat wake factor score for that site."
+				},
+				"bwe_10": {
+					"title": ">200 m Rec & >500 m Comm (Score 10)",
+					"text": "Shorelines that are not impacted by boat wake energy. Shoreline points adjacent to no wake zones automatically received a factor score of 10 for boat wake energy. Local knowledge of the extent to which no-wake designations are observed/enforced along a particular shoreline can be used to revise the boat wake energy score for a site."
+				},
+				"bwe_5": {
+					"title": "100-200 m Rec or 200-500 m Comm (Score 5)",
+					"text": "Shorelines that are moderately impacted by boat wake energy."
+				},
+				"bwe_0": {
+					"title": "<100 m Rec or <200 m Comm (Score 0)",
+					"text": "Shorelines that are potentially heavily impacted by boat wake energy."
+				},
+				"dist": {
+					"title": "Proximity to Natural Marsh Shoreline",
+					"text": "The presence of nearby existing marsh vegetation is a strong indicator that site conditions are right to support marsh vegetation. The proximity of each point to marsh was estimated using a shoreline habitat shape file from NC Department of Coastal Management. In some cases, the lack of nearby marsh is a result of shoreline hardening rather than unsuitable growth conditions.  In these cases, marsh only shorelines may still be an effective option."
+				},
+				"dist_10": {
+					"title": "Marsh Shoreline ≤ 100 m (Score 10)",
+					"text": "The presence of nearby natural shoreline marsh suggests that this site may support marsh vegetation."
+				},
+				"dist_0":{
+					"title": "Marsh Shoreline > 100 m (Score 0)",
+					"text": "The lack of nearby natural shoreline marsh suggests that conditions at this site may not be suitable for marsh vegetation."
+				}
 			},
 			"download": {
-				"report":"http://media.coastalresilience.org/NC/Carteret_LivingShoreline_Summary.pdf"
+				"report":"http://media.coastalresilience.org/NC/Carteret_LivingShoreline_Summary.pdf",
+				"methods":"http://media.coastalresilience.org/NC/Living_Shorelines_Methods.pdf"
+			},
+			"stats": {
+				"pct": {
+					"habitat": {
+						"total": ">99",
+						"marsh": 86,
+						"marsh_fortified": 14,
+						"not_recommended": "<1"
+					},
+					"factors": {
+						"rep_we": {
+							"10": 86,
+							"5": 10,
+							"0": 4
+						},
+						"bwe": {
+							"10": 94,
+							"5": 5,
+							"0": 1
+						},
+						"dist": {
+							"10": 92,
+							"0": 8
+						}
+					}
+				}
 			}
 		},
 		"Onslow": {
+			"extent": {
+				"xmin":-8647312.5219999999,
+				"ymin":4088150.4611999989,
+				"xmax":-8582295.9233999997,
+				"ymax":4161770.566399999,
+				"spatialReference":{
+					"wkid":102100,
+					"latestWkid":3857
+				}
+			},
 			"layers": {
-				"main": { "type": "dynamic", "url":"http://dev.services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer", "visibleIds": [19] },
-				"feature": { "type": "feature", "url":"http://dev.services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/18" }
+				"main": { "type": "dynamic", "url":"http://services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer", "scaleRangeIds": { "small":[20,21], "large":[19,21] }  },
+				"feature": { "type": "feature", "url":"http://services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/19" }
 			},
 			"query": { 
 				"habitat": {
-					"url": "http://dev.services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/19",
+					"url": "http://services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/20",
 					"outFields": ["INDEX","TOTAL_MILES"],
 					"keyField":"INDEX",
-					"valueField":"TOTAL_MILES",
-					"key": { "0":"not_recommended", "2":"marsh_fortified", "4":"marsh" }
+					"valueField":"TOTAL_MILES"
 				}, 
 				"factors": {
 					"rep_we": { 
-						"url": "http://dev.services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/17",
+						"url": "http://services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/18",
 						"outFields": ["RWE_SCORE","Shape_Area"],
 						"keyField":"RWE_SCORE",
 						"valueField":"Shape_Area"
 					},
 					"bwe": {
-						"url": "http://dev.services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/16",
+						"url": "http://services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/17",
 						"outFields": ["BOAT_SCORE","Shape_Area"],
 						"keyField":"BOAT_SCORE",
 						"valueField":"Shape_Area"
 					},
 					"dist": {
-						"url": "http://dev.services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/15",
+						"url": "http://services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/16",
 						"outFields": ["MARSH_SCORE","Shape_Area"],
 						"keyField":"MARSH_SCORE",
 						"valueField":"Shape_Area"
@@ -203,44 +475,387 @@
 			},
 			"definitionExpression": {
 				"habitat": {
-					"dynamicId": 19,
-					"field": "INDEX"
+					"dynamicId": 20,
+					"field": "INDEX",
+					"values": {
+						"marsh": 4,
+						"marsh_fortified": 2,
+						"not_recommended": 0
+					}
 				},
 				"factor": {
 					"rep_we": { 
-						"dynamicId": 17,
+						"dynamicId": 18,
 						"field": "RWE_SCORE"
 					},
 					"bwe": { 
-						"dynamicId": 16,
+						"dynamicId": 17,
 						"field": "BOAT_SCORE"
 					},
 					"dist": { 
-						"dynamicId": 15,
+						"dynamicId": 16,
 						"field": "MARSH_SCORE"
 					}
 				}
 			},
-			"tooltips": {
-				"region": "Geographic areas where climate change/sea level rise vulnerability studies have been conducted."
-			},
-			"extent": {
-				"xmin":-8636070.59516,
-				"ymin":4115178.3144,
-				"xmax":-8571296.96194,
-				"ymax":4137371.6708,
-				"spatialReference": {
-					"wkid": 102100,
-					"latestWkid": 3857
+			"key": {
+				"habitat": { 
+					"0":"not_recommended",
+					"2":"marsh_fortified",
+					"4":"marsh" 
 				}
 			},
-			"controls": {
-				"habitat": {},
-				"radio": {},
-				"check": {}
+			"interface": {
+				"description": {
+					"show": true,
+					"label": "If your shoreline is currently experiencing erosion, or you have a bulkhead that is failing and in need of replacement, this tool can help you decide how to best utilize a natural approach for shoreline stabilization."
+				},
+				"factors": {
+					"panetitle": "Living Shoreline Suitability Factors",
+					"display": true,
+					"controls": {
+						"show": {
+							"select": [],
+							"togglebutton": [],
+							"radio": ["rep_we", "bwe", "dist"]
+						},
+						"hide": {
+							"select": ["factors"],
+							"togglebutton": ["vulnerability", "climate", "human"],
+							"radio": []
+						}
+					}
+				},
+				"other": {
+					"display": true,
+					"controls": {
+						"show": {
+							"check": ["projects","marsh","recreational","commercial","rel_we"]
+						},
+						"hide": {
+							"check": []
+						}
+					}
+				}
+			},
+			"colors": { 
+				"scores": {
+					"10":"#b9bee6", 
+					"5":"#BA83CD", 
+					"0":"#5f025b"
+				},
+				"habitat": {
+					"marsh":"#43B39D", 
+					"marsh_fortified":"#FECB60", 
+					"not_recommended":"#FF6436"
+				}
+			},
+			"labels": {
+				"factors": {
+					"rep_we": "Wind Wave Energy (WWE)",
+					"bwe": "Boat Wake Energy (BWE)",
+					"dist": "Distance to Marsh (DTM)"
+				},
+				"scores": {
+					"10": { "rep_we":"≤ 300", "bwe":">200 Rec >500 Com", "dist":"≤ 100" },
+					"5": {  "rep_we":"300-700", "bwe":"100-200 Rec 200-500 Com" },
+					"0": { "rep_we":"> 700", "bwe":"<100 Rec <200 Com", "dist":"> 100" }
+				},
+				"habitat": {
+					"marsh": "Marsh vegetation<br>alone or with oyster", 
+					"marsh_fortified": "Marsh vegetation<br>fortified with rock sill", 
+					"not_recommended": "Not recommended<br>for living shoreline"
+				}
+			},
+			"table": {
+				"node":"recommendations",
+				"title": "Details of Living Shoreline Suitability",
+				"summary": {
+					"place": "after",
+					"category": {
+						"habitat": { "label_field": "INDEX", "score_field": "INDEX", "layer": "habitat", "colspan": { "category":17, "score":3 } }
+					}
+				},
+				"factors": {
+					"cols":3,
+					"header": {
+						"td": [
+							{ "name":"Factor", "width":"41%", "css":"label" },
+							{ "name":"Criteria", "width":"43%", "css":"value" },
+							{ "name":"Score", "width":"15%", "css":"score" }
+						]
+					},
+					"rows": {
+						"tr": [
+							{ "id":"rep_we", "label":"Wind Wave Energy", "field":"RWE_score" },
+							{ "id":"bwe", "label":"Boat Wake Energy", "field":"boat_score" },
+							{ "id":"dist", "label":"Distance to Marsh", "field":"Marsh_score" }
+						]
+					}
+				}
+			},
+			"tooltips": {
+				"region": {
+					"title": "Choose a County",
+					"text":"Geographic areas where living shoreline recommendations have been completed."
+				},
+				"marsh": {
+					"title": "Marsh alone or with oyster",
+					"text": "Wetland vegetation absorbs wave energy and helps to hold soil in place.  On many low wave energy shorelines, vegetation can effectively protect against erosion.  In areas that are conducive to oysters, a fringing oyster reef can provide further protection against waves and increase habitat complexity.  This living shoreline type is recommended for locations with both low wave energy AND nearby marsh."
+				},
+				"marsh_fortified": {
+					"title": "Marsh fortified with rock sill",
+					"text": "On shorelines with moderate wave energy, vegetation and oysters alone may not be enough to curb shoreline erosion.  In these settings, a low-profile sill parallel to shore provides an initial wave break, allowing the marsh vegetation to grow, further reducing waves and trap sediment.  This living shoreline type is recommended where wave energy is moderate and/or natural marsh does not occur within 100 meters of the proposed site." 
+				},
+				"not_recommended": {
+					"title": "Not recommended for Living Shorelines",
+					"text": "High wave energy shorelines do not typically support natural fringing saltmarshes.  However, it may still be possible to incorporate natural habitat into alternative designs in conjunction with breakwaters, riprap or bulkheads."
+				},
+				"rep_we":{
+					"title": "Representative Wind Wave Energy",
+					"text": "Shoreline wind-wave energy was modeled using the National Oceanic and Atmospheric Administration’s <a href='https://products.coastalscience.noaa.gov/wemo/' target='_blank'>Wave Exposure Model (WEMo)</a>. WEMo calculates representative wave energy (RWE), or average wave energy experienced at a site, using local wind and bathymetric data.<br><br>WEMo was run on a grid of points spaced at 50 m intervals and extending 200 m offshore using 20 m resolution bathy.  The model was adjusted for a 1 m tidal range, and WEMo was run using the top 20% of hourly wind data from Cape Lookout (NDBC station CLKN7) spanning the period 2012-2015.  Threshold values for shoreline wind-wave energy calculated by WEMo were based upon previous analysis of RWE values along stable natural marsh shorelines, oyster fringed shorelines and sill based living shorelines."
+				},
+				"rep_we_10":{
+					"title": "≤ 300 J/m (Score 10)",
+					"text": "Previous analysis of representative wave energy (RWE), or average wave energy experienced at a site, along natural marsh shorelines in the study region determined that the width of natural shoreline marshes decreases dramatically in regions where RWE is > 300 J/m (Currin et al., 2017)."
+				},
+				"rep_we_5":{
+					"title": "RWE 300 - 700 J/m (Score 5)",
+					"text": "Scientific study of sill-based living shoreline techniques determined that these approaches are an effective means of shoreline stabilization on shorelines with representative wave energy (RWE), or average wave energy experienced at a site, values as high as 700."
+				},
+				"rep_we_0":{
+					"title": "> 700 J/m (Score 0)",
+					"text": "In these locations, average wind wave energy is high enough that the use of traditional living shoreline techniques are not recommended."
+				},
+				"bwe":{
+					"title": "Boat Wake Energy (BWE)",
+					"text": "Boat wake energy dissipates over distance from the vessel.  Thus, the farther a boat travels from the shoreline, the less impact it has.  The impact of boat wakes on shorelines was weighted as a function of the proximity of the shoreline point to marked navigation channels.  There are two primary types of boat channels in the study region:<br><br>1) the Atlantic Intracoastal Water Way, frequented by large commercial vessels that create large waves that travel far before dissipating, and <br>2) channels that are too small to accommodate large vessels, or recreational boating channels.<br><br>Based on previous scientific studies of boat wake impacts on shorelines, two categories of distance criteria were identified.  Each shoreline point was scored on proximity to the nearest recreational channel and proximity to the Atlantic Intracoastal Water Way and the lowest of those two scores was used as the boat wake factor score for that site."
+				},
+				"bwe_10": {
+					"title": ">200 m Rec & >500 m Comm (Score 10)",
+					"text": "Shorelines that are not impacted by boat wake energy. Shoreline points adjacent to no wake zones automatically received a factor score of 10 for boat wake energy."
+				},
+				"bwe_5": {
+					"title": "100-200 m Rec or 200-500 m Comm (Score 5)",
+					"text": "Shorelines that are moderately impacted by boat wake energy."
+				},
+				"bwe_0": {
+					"title": "<100 m Rec or <200 m Comm (Score 0)",
+					"text": "Shorelines that are potentially heavily impacted by boat wake energy."
+				},
+				"dist": {
+					"title": "Proximity to Natural Marsh Shoreline",
+					"text": "The presence of nearby existing marsh vegetation is a strong indicator of all of the factors that influence marsh stability. The proximity of each point to marsh was estimated using a shoreline habitat shape file from NC Department of Coastal Management."
+				},
+				"dist_10": {
+					"title": "Marsh Shoreline ≤ 100 m (Score 10)",
+					"text": "The presence of nearby natural shoreline marsh suggests that this site may support marsh vegetation."
+				},
+				"dist_0":{
+					"title": "Marsh Shoreline > 100 m (Score 0)",
+					"text": "The lack of nearby natural shoreline marsh suggests that conditions at this site may not be suitable for marsh vegetation."
+				}
 			},
 			"download": {
-				"report":"http://media.coastalresilience.org/NC/Onslow_LivingShoreline_Summary.pdf"
+				"report":"http://media.coastalresilience.org/NC/Onslow_LivingShoreline_Summary.pdf",
+				"methods":"http://media.coastalresilience.org/NC/Living_Shorelines_Methods.pdf"
+			},
+			"stats":{
+				"pct": {
+					"habitat": {
+						"total": ">99",
+						"marsh": 80,
+						"marsh_fortified": 20,
+						"not_recommended": "<1"
+					},
+					"factors": {
+						"rep_we": {
+							"10": 90,
+							"5": 10,
+							"0": 0
+						},
+						"bwe": {
+							"10": 81,
+							"5": 7,
+							"0": 12
+						},
+						"dist": {
+							"10": 92,
+							"0": 8
+						}
+					}
+				}
+			}
+		},
+		"Virginia": {
+			"layers": {
+				"main": { "type": "dynamic", "url":"http://services.coastalresilience.org/arcgis/rest/services/Virginia/Living_Shoreline_Explorer/MapServer", "scaleRangeIds": { "small":[1], "large":[0] }  },
+				"feature": { "type": "feature", "url":"http://services.coastalresilience.org/arcgis/rest/services/Virginia/Living_Shoreline_Explorer/MapServer/0" }
+			},
+			"definitionExpression": {
+				"habitat": {
+					"dynamicId": 0,
+					"field": "LSEM",
+					"values": {
+						"marsh": "Marsh Enhancement",
+						"marsh_fortified": "Marsh With Structures",
+						"not_recommended": "Unsuitable"
+					}
+				}
+			},
+			"extent": {
+				"xmin":-8456928.489372535,
+				"ymin":4455345.349797636,
+				"xmax":-8383611.75071417,
+				"ymax":4582282.284568392,
+				"spatialReference":{
+					"wkid":102100,
+					"latestWkid":3857
+				}
+			},
+			"key": {
+				"habitat": { 
+					"Marsh Enhancement":"marsh",
+					"Marsh With Structures":"marsh_fortified",
+					"Unsuitable":"not_recommended" 
+				}
+			},
+			"interface": {
+				"description": {
+					"show":true,
+					"label":"Suitability for nature-based shoreline enhancement techniques is determined using living shoreline engineering guidelines. This app serves as a screening tool and does not replace a site visit/assessment."
+				},
+				"factors": {
+					"panetitle": "Marsh Vulnerability Index",
+					"display": false,
+					"controls": {
+						"show": {
+							"select": ["factors"],
+							"togglebutton": ["vulnerability"],
+							"radio": []
+						},
+						"hide": {
+							"select": [],
+							"togglebutton": [],
+							"radio": ["rep_we", "bwe", "dist"]
+						}
+					}
+				},
+				"other": {
+					"display": false,
+					"controls": {
+						"show": {
+							"check": []
+						},
+						"hide": {
+							"check": ["projects","marsh","recreational","commercial","rel_we"]
+						}
+					}
+				},
+				"infoGraphic": {
+					"popup": false,
+					"url":"http://media.coastalresilience.org/VA/LivingShorelineExplorerApp_FactSheet.pdf "
+				}
+			},
+			"colors": { 
+				"habitat": {
+					"marsh":"#44B14C", 
+					"marsh_fortified":"#FF8300", 
+					"not_recommended":"#B4B4B4"
+				}
+			},
+			"labels": {
+				"habitat": {
+					"marsh": "Marsh vegetation<br>enhancement", 
+					"marsh_fortified": "Marsh vegetation<br>with structures", 
+					"not_recommended": "Unsuitable for<br>living shoreline"
+				},
+				"factors": {
+					"wave":"Wave Exposure",
+					"storm":"Storm Surge",
+					"slr":"Sea Level Rise",
+					"boat":"Boat Activity",
+					"marsh_width":"Marsh Buffer Width",
+					"marsh_veg":"Marsh Vegetation Height",
+					"marsh_elev":"Marsh Elevation",
+					"marsh_slope":"Marsh Slope"
+				}
+			},
+			"table": {
+				"node":"recommendations",
+				"title": "Details of Living Shoreline Suitability",
+				"height": "450px",
+				"summary": {
+					"place": "before",
+					"category": {
+						"habitat": { "label":"Suitability:", "label_field": "LSEM", "layer": "habitat", "colspan": { "category":15, "label":5 } },
+						"factors": { "label":"Overall Vulnerability:", "label_field":"MVI", "layer": "factors", "colspan": { "category":8, "label":12 } }
+					}
+				},
+				"factors": {
+					"header": {
+						"title": "Vulnerability to Individual Factors",
+						"td": [
+							{ "name":"Factor", "width":"70%", "css":"label" },
+							{ "name":"Score", "width":"30%", "css":"score" }
+						]
+					},
+					"rows": {
+						"tr": [
+							{ "id":"wave", "label":"Wave Exposure", "field":"MVI_wave" },
+							{ "id":"storm", "label":"Storm Surge", "field":"MVI_surge" },
+							{ "id":"slr", "label":"Sea Level Rise", "field":"MVI_rSLR" },
+							{ "id":"boat", "label":"Boat Activity", "field":"MVI_boat" },
+							{ "id":"marsh_width", "label":"Marsh Buffer Width", "field":"MVI_veg_bu" },
+							{ "id":"marsh_veg", "label":"Marsh Vegetation Height", "field":"MVI_veg_ht" },
+							{ "id":"marsh_elev", "label":"Marsh Elevation", "field":"MVI_elev" },
+							{ "id":"marsh_slope", "label":"Marsh Slope", "field":"MVI_slope" }
+						]
+					}
+				}
+			},
+			"tooltips": {
+				"region": {
+					"title": "Choose a County",
+					"text":"Geographic areas where living shoreline recommendations have been completed."
+				},
+				"marsh": {
+					"title": "Marsh Vegetation Enhancement",
+					"text": "Wetland vegetation absorbs wave energy and helps to hold soil in place. On many low wave energy shorelines, vegetation can effectively protect against erosion. Marsh enhancement refers to techniques such as marsh plantings to enhance or restore existing marsh. This living shoreline type is recommended for locations with existing marsh that has low wave exposure and low to moderate marsh elevation and slope."
+				},
+				"marsh_fortified": {
+					"title": "Marsh Vegetaion with Structures",
+					"text": "On shorelines with moderate wave energy, vegetation alone may not be enough to curb shoreline erosion. Marsh with structures involves treatments like marsh enhancement with rock or oyster sill. In these settings, a low-profile sill parallel to shore provides an initial wave break, allowing the marsh vegetation to grow, further reducing waves and trapping sediment. This living shoreline type is recommended for locations which may or may not have existing marsh and which have low to moderate wave exposure and higher marsh elevation and slope." 
+				},
+				"not_recommended": {
+					"title": "Unsuitable for Living Shorelines",
+					"text": "High wave energy shorelines do not typically support natural fringing saltmarshes. However, it may still be possible to incorporate natural habitat into alternative designs in conjunction with breakwaters, riprap or bulkheads."
+				},
+				"togglegroup_vulnerability":{
+					"title": "Marsh Vulnerability Index (MVI) ",
+					"text": "The marsh vulnerability index (MVI) shows the vulnerability of tidal salt marshes to erosion and inundation. The MVI incorporates high resolution spatial data on eight tidal salt marsh erosion variables: wind wave and boat wake exposure, the elevation and shape of the marsh edge, marsh vegetation characteristics, current rate of sea level rise, and moderate intensity storm surge. These individual variables are assigned a risk value and then combined via a simple spatial computation to reveal an overall erosion and inundation vulnerability. High-risk shorelines have one, or a combination, of the following characteristics: high exposure to wind waves or boat activity, steep and high marsh platform, short or non-existent vegetation, narrow vegetation buffers, high storm surge impacts and rate of sea level rise."
+				}
+			},
+			"download": {
+				"report":""
+			},
+			"stats":{
+				"dist": {
+					"habitat": {
+						"total": 825,
+						"marsh": 458,
+						"marsh_fortified": 263,
+						"not_recommended": 105
+					}
+				},
+				"pct": {
+					"habitat": {
+						"total": 87,
+						"marsh": 55,
+						"marsh_fortified": 32,
+						"not_recommended": 13
+					}
+				}
 			}
 		}
 	}
