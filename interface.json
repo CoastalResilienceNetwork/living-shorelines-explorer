@@ -208,8 +208,8 @@
 			},
 			"definitionExpression": {
 				"habitat": {
-					"dynamicId": 12,
-					"field": "INDEX",
+					"dynamicId": [11,12],
+					"field": "County='Carteret' AND INDEX",
 					"values": {
 						"marsh": 4,
 						"marsh_fortified": 2,
@@ -316,7 +316,7 @@
 				"summary": {
 					"place": "after",
 					"category": {
-						"habitat": { "label_field": "INDEX", "score_field": "INDEX", "layer": "habitat", "colspan": { "category":17, "score":3 } }
+						"habitat": { "label_field": "INDEX", "score_field": "Final_Scor", "layer": "habitat", "colspan": { "category":17, "score":3 } }
 					}
 				},
 				"factors": {
@@ -475,8 +475,8 @@
 			},
 			"definitionExpression": {
 				"habitat": {
-					"dynamicId": 20,
-					"field": "INDEX",
+					"dynamicId": [19,20],
+					"field": "County='Onslow' AND INDEX",
 					"values": {
 						"marsh": 4,
 						"marsh_fortified": 2,
@@ -573,7 +573,7 @@
 				"summary": {
 					"place": "after",
 					"category": {
-						"habitat": { "label_field": "INDEX", "score_field": "INDEX", "layer": "habitat", "colspan": { "category":17, "score":3 } }
+						"habitat": { "label_field": "INDEX", "score_field": "Final_Scor", "layer": "habitat", "colspan": { "category":17, "score":3 } }
 					}
 				},
 				"factors": {
