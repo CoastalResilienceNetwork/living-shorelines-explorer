@@ -538,7 +538,13 @@ define([
 						var index = this._interface.region[this._region].definitionExpression.factor[type].dynamicId;
 						break;
 				}
-				layerDefs[index] = def;
+				if(_.isArray(index)) {
+					array.forEach(index, function(key) {
+						layerDefs[key] = def;
+					});
+				} else {	
+					layerDefs[index] = def;
+				}
 				this._mapLayer.setLayerDefinitions(layerDefs)
 			}
 			
@@ -554,7 +560,13 @@ define([
 						var index = self._interface.region[self._region].definitionExpression.factor[type].dynamicId;
 						break;
 				}
-				layerDefs[index] = null;
+				if(_.isArray(index)) {
+					array.forEach(index, function(key) {
+						layerDefs[key] = null;
+					});
+				} else {	
+					layerDefs[index] = null;
+				}
 				this._mapLayer.setLayerDefinitions(layerDefs); 
 			}
 			
