@@ -1,8 +1,5 @@
 {
     "css": [
 		"plugins/living-shorelines-explorer/main.css"
-    ],
-    "use": {
-		"underscore": { "attach": "_" }
-    }
+    ]
 }
