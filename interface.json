@@ -232,10 +232,10 @@
 				}
 			},
 			"extent": {
-				"xmin":-8590277.0402000006,
-				"ymin":4107096.9270000011,
-				"xmax":-8462401.4778000005,
-				"ymax":4191292.5922000012,
+				"xmin":-8614467.544694105,
+				"ymin":4096442.525359713,
+				"xmax":-8446350.958460935,
+				"ymax":4204868.992212647,
 				"spatialReference":{
 					"wkid":102100,
 					"latestWkid":3857
@@ -562,8 +562,8 @@
 					"0": { "rep_we":"> 700", "bwe":"<100 Rec <200 Com", "dist":"> 100" }
 				},
 				"habitat": {
-					"marsh": "Marsh vegetation<br>alone or with oyster", 
-					"marsh_fortified": "Marsh vegetation<br>fortified with rock sill", 
+					"marsh": "Marsh plants<br>alone or with oyster reef", 
+					"marsh_fortified": "Hybrid living shoreline<br>(including marsh-sills)", 
 					"not_recommended": "Not recommended<br>for living shoreline"
 				}
 			},
@@ -600,11 +600,11 @@
 					"text":"Geographic areas where living shoreline recommendations have been completed."
 				},
 				"marsh": {
-					"title": "Marsh alone or with oyster",
+					"title": "Marsh plants alone or with oyster reef",
 					"text": "Wetland vegetation absorbs wave energy and helps to hold soil in place.  On many low wave energy shorelines, vegetation can effectively protect against erosion.  In areas that are conducive to oysters, a fringing oyster reef can provide further protection against waves and increase habitat complexity.  This living shoreline type is recommended for locations with both low wave energy AND nearby marsh."
 				},
 				"marsh_fortified": {
-					"title": "Marsh fortified with rock sill",
+					"title": "Hybrid living shoreline (including marsh-sills)",
 					"text": "On shorelines with moderate wave energy, vegetation and oysters alone may not be enough to curb shoreline erosion.  In these settings, a low-profile sill parallel to shore provides an initial wave break, allowing the marsh vegetation to grow, further reducing waves and trap sediment.  This living shoreline type is recommended where wave energy is moderate and/or natural marsh does not occur within 100 meters of the proposed site." 
 				},
 				"not_recommended": {
