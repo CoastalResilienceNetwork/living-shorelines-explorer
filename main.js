@@ -12,11 +12,6 @@ require({
             name: "d3",
             location: "//d3js.org",
             main: "d3.v3.min"
-        },
-        {
-            name: "underscore",
-            location: "//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3",
-            main: "underscore-min"
         }
     ]
 });
@@ -42,8 +37,8 @@ define([
        ],
        function (declare, PluginBase, parser, on, registry, array, domConstruct, query, dom, domClass, domStyle, domAttr, d3, _, tool, appData, appConfig) {
            return declare(PluginBase, {
-               toolbarName: "Living Shorelines",
-			   fullName: "Living Shorelines",
+               toolbarName: "Living Shoreline Explorer",
+			   fullName: "Living Shoreline Explorer",
                toolbarType: "sidebar",
                hasHelp: false,
                showServiceLayersInLegend: true,
