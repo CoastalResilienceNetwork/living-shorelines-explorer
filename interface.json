@@ -828,7 +828,7 @@
 					"text": "On shorelines with moderate wave energy, vegetation alone may not be enough to curb shoreline erosion. Marsh with structures involves treatments like marsh enhancement with rock or oyster sill. In these settings, a low-profile sill parallel to shore provides an initial wave break, allowing the marsh vegetation to grow, further reducing waves and trapping sediment. This living shoreline type is recommended for locations which may or may not have existing marsh and which have low to moderate wave exposure and higher marsh elevation and slope." 
 				},
 				"not_recommended": {
-					"title": "Unsuitable for Living Shorelines",
+					"title": "Unsuitable for Living Shoreline",
 					"text": "High wave energy shorelines do not typically support natural fringing saltmarshes. However, it may still be possible to incorporate natural habitat into alternative designs in conjunction with breakwaters, riprap or bulkheads."
 				},
 				"togglegroup_vulnerability":{

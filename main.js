@@ -37,6 +37,8 @@ define([
        ],
        function (declare, PluginBase, parser, on, registry, array, domConstruct, query, dom, domClass, domStyle, domAttr, d3, _, tool, appData, appConfig) {
            return declare(PluginBase, {
+               toolbarName: "Living Shoreline",
+			   fullName: "Living Shoreline",
                toolbarType: "sidebar",
                hasHelp: false,
                showServiceLayersInLegend: true,
