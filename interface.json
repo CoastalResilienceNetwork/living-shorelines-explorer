@@ -407,8 +407,8 @@
 				"pct": {
 					"habitat": {
 						"total": ">99",
-						"marsh": 86,
-						"marsh_fortified": 14,
+						"marsh": 85,
+						"marsh_fortified": 15,
 						"not_recommended": "<1"
 					},
 					"factors": {
@@ -664,8 +664,8 @@
 				"pct": {
 					"habitat": {
 						"total": ">99",
-						"marsh": 80,
-						"marsh_fortified": 20,
+						"marsh": 79,
+						"marsh_fortified": 21,
 						"not_recommended": "<1"
 					},
 					"factors": {
