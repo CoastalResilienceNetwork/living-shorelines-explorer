@@ -326,7 +326,8 @@ define([
 				this._map.addLayer(this.hoverLayer); */
 				
 				on(dom.byId(this._map.getMapId()).parentNode, "click", function(evt){
-					if(!_.contains(evt.target.parentElement.id.split("-"), "ls") && domStyle.get(self._container.parentNode,"display") != "none") {
+					var parent = (_.contains(evt.target.parentElement.id.split("-"), "ls")) ? evt.target.parentElement : evt.target.parentElement.parentElement;
+					if(!_.contains(parent.id.split("-"), "ls") && domStyle.get(self._container.parentNode,"display") != "none") {
 						self._map.graphics.clear();
 						var ui = self._interface.region[self._region];
 						var node = _.first(query(".plugin-ls .details." + ui.table.node));
