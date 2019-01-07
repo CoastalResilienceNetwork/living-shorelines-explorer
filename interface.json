@@ -174,12 +174,12 @@
 	"region": {
 		"Carteret": {
 			"layers": {
-				"main": { "type": "dynamic", "url":"http://services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer", "scaleRangeIds": {"small":[12,13], "large":[11,13] } },
-				"feature": { "type": "feature", "url":"http://services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/11" }
+				"main": { "type": "dynamic", "url":"https://services2.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer", "scaleRangeIds": {"small":[12,13], "large":[11,13] } },
+				"feature": { "type": "feature", "url":"https://services2.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/11" }
 			},
 			"query": { 
 				"habitat": {
-					"url": "http://services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/12",
+					"url": "https://services2.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/12",
 					"outFields": ["INDEX","TOTAL_MILES"],
 					"keyField":"INDEX",
 					"valueField":"TOTAL_MILES",
@@ -187,19 +187,19 @@
 				}, 
 				"factors": {
 					"rep_we": { 
-						"url": "http://services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/10",
+						"url": "https://services2.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/10",
 						"outFields": ["RWE_SCORE","Shape_Area"],
 						"keyField":"RWE_SCORE",
 						"valueField":"Shape_Area"
 					},
 					"bwe": {
-						"url": "http://services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/9",
+						"url": "https://services2.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/9",
 						"outFields": ["BOAT_SCORE","Shape_Area"],
 						"keyField":"BOAT_SCORE",
 						"valueField":"Shape_Area"
 					},
 					"dist": {
-						"url": "http://services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/8",
+						"url": "https://services2.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/8",
 						"outFields": ["MARSH_SCORE","Shape_Area"],
 						"keyField":"MARSH_SCORE",
 						"valueField":"Shape_Area"
@@ -442,31 +442,31 @@
 				}
 			},
 			"layers": {
-				"main": { "type": "dynamic", "url":"http://services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer", "scaleRangeIds": { "small":[20,21], "large":[19,21] }  },
-				"feature": { "type": "feature", "url":"http://services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/19" }
+				"main": { "type": "dynamic", "url":"https://services2.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer", "scaleRangeIds": { "small":[20,21], "large":[19,21] }  },
+				"feature": { "type": "feature", "url":"https://services2.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/19" }
 			},
 			"query": { 
 				"habitat": {
-					"url": "http://services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/20",
+					"url": "https://services2.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/20",
 					"outFields": ["INDEX","TOTAL_MILES"],
 					"keyField":"INDEX",
 					"valueField":"TOTAL_MILES"
 				}, 
 				"factors": {
 					"rep_we": { 
-						"url": "http://services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/18",
+						"url": "https://services2.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/18",
 						"outFields": ["RWE_SCORE","Shape_Area"],
 						"keyField":"RWE_SCORE",
 						"valueField":"Shape_Area"
 					},
 					"bwe": {
-						"url": "http://services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/17",
+						"url": "https://services2.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/17",
 						"outFields": ["BOAT_SCORE","Shape_Area"],
 						"keyField":"BOAT_SCORE",
 						"valueField":"Shape_Area"
 					},
 					"dist": {
-						"url": "http://services.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/16",
+						"url": "https://services2.coastalresilience.org/arcgis/rest/services/North_Carolina/Living_Shoreline_Explorer/MapServer/16",
 						"outFields": ["MARSH_SCORE","Shape_Area"],
 						"keyField":"MARSH_SCORE",
 						"valueField":"Shape_Area"
@@ -689,8 +689,8 @@
 		},
 		"Virginia": {
 			"layers": {
-				"main": { "type": "dynamic", "url":"http://services.coastalresilience.org/arcgis/rest/services/Virginia/Living_Shoreline_Explorer/MapServer", "scaleRangeIds": { "small":[1], "large":[0] }  },
-				"feature": { "type": "feature", "url":"http://services.coastalresilience.org/arcgis/rest/services/Virginia/Living_Shoreline_Explorer/MapServer/0" }
+				"main": { "type": "dynamic", "url":"https://services2.coastalresilience.org/arcgis/rest/services/Virginia/Living_Shoreline_Explorer/MapServer", "scaleRangeIds": { "small":[1], "large":[0] }  },
+				"feature": { "type": "feature", "url":"https://services2.coastalresilience.org/arcgis/rest/services/Virginia/Living_Shoreline_Explorer/MapServer/0" }
 			},
 			"definitionExpression": {
 				"habitat": {
